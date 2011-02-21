@@ -3,11 +3,15 @@
   (:use [hiccup core]
         clojure.walk))
 
-(defmacro attach
+;;
+;; Thunks/Syntax
+;;
+
+(defmacro ^{:hew/syntax true} attach
   [arg-name key]
   `(~key ~arg-name))
 
-(defmacro call
+(defmacro ^{:hew/syntax true} call
   "Used in a template like (call some-template) or (call some-template {:a 1}).
    If the former form is used, the same arg map the callee got is passed in. If
    the latter form is used, the supplied map is merged into the callee's arg
@@ -17,9 +21,13 @@
     `(~tmpl-name (merge ~arg-name ~(first opt-args)))
     `(~tmpl-name ~arg-name)))
 
-(defmacro present?
+(defmacro ^{:hew/syntax true} present?
   [arg-name key]
   `(contains? ~arg-name ~key))
+
+;;
+;; Compiler
+;;
 
 (defmacro in-namespace?
   "Takes a namespace name (ie, 'clojure.string) and a symbol, and returns true
@@ -45,7 +53,8 @@
               (if (and (list? x)
                        (symbol? (first x))
                        (in-namespace? 'hew.core
-                                      (first x)))
+                                      (first x))
+                       (:hew/syntax (meta (ns-resolve 'hew.core (first x)))))
                 `(-> ~arg-name ~x)
                 x))
             forms))
