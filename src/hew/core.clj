@@ -8,6 +8,9 @@
 ;;
 
 (defmacro ^{:hew/syntax true} attach
+  "You can use this to insert the contents of a map key's value at the given
+   location in the template, or you can just grab the value with it for
+   further manipulation."
   [arg-name key]
   `(~key ~arg-name))
 
@@ -22,12 +25,16 @@
     `(~tmpl-name ~arg-name)))
 
 (defmacro ^{:hew/syntax true} present?
+  "Not strictly necessary; you can just check if a given key resolves to nil.
+   But it can look nicer."
   [arg-name key]
   `(contains? ~arg-name ~key))
 
 ;;
 ;; Compiler
 ;;
+;; Note: Everything here runs at template compile time (that is, macro
+;; expansion, and not during the template's render time.
 
 (defmacro in-namespace?
   "Takes a namespace name (ie, 'clojure.string) and a symbol, and returns true
@@ -44,19 +51,45 @@
     `(or (contains? (set (vals (ns-publics ~ns)))
                     (ns-resolve ~ns-here ~sym)))))
 
+(defn code-form?
+  "Takes a form and returns true if it is a 'code' form. In other words,
+   it is attempting to express code to be executed for its content, instead
+   of being a marker for hiccup to process into HTML."
+  [form]
+  (and (sequential? form) ;; (seq? {}) -> true, (sequential? {}) -> false
+       (not (vector? form))
+       (not= 'quote (first form))))
+
+(defn syntax-transformer
+  "Given a symbol naming the template's map parameter and a form, applies a
+   number of transformations as part of the compilation process and returns
+   a new form that should be used instead."
+  [arg-name form]
+  (cond
+   ;; First: If we see a list with a symbol in the fn slot, and that symbol
+   ;; resolves to this namespace and has a :hew/syntax in its metadata,
+   ;; insert the arg-name into the form as its first argument.
+   (and (code-form? form)
+        (symbol? (first form))
+        (in-namespace? 'hew.core
+                       (first form))
+        (:hew/syntax (meta (ns-resolve 'hew.core (first form)))))
+   `(-> ~arg-name ~form)
+   ;; Next, check for a symbol that is being deref'ed (ie, @some-sym). Turn
+   ;; that into a call to get that value out of the arg map. Basically works
+   ;; the same as attach.
+   (and (code-form? form)
+        (= 'clojure.core/deref (first form)))
+   `(attach ~arg-name (keyword (second (quote ~form))))
+   :else ;; Anything else, just let the form pass through.
+   form))
+
 (defn transform-forms
   "This function goes through the forms passed in and makes modifications to
    the structure so that it becomes correctly executable code. For now, this
    means adding the map argument to template functions."
   [forms arg-name]
-  (postwalk (fn [x]
-              (if (and (list? x)
-                       (symbol? (first x))
-                       (in-namespace? 'hew.core
-                                      (first x))
-                       (:hew/syntax (meta (ns-resolve 'hew.core (first x)))))
-                `(-> ~arg-name ~x)
-                x))
+  (postwalk (partial syntax-transformer arg-name)
             forms))
 
 (defmacro deftemplate

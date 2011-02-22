@@ -55,17 +55,69 @@
          (document2 {:title "Alternate Title!"}))))
 
 ;; Test conditional logic based on presence of key
-(deftemplate snippet2
+(deftemplate snippet-conditional
   [:h1 (if (present? :title)
          (attach :title)
          "Default Title")])
 
 (deftest test-conditional-template
   (is (= "<h1>Default Title</h1>"
-         (snippet2)))
+         (snippet-conditional)))
   (is (= "<h1>Default Title</h1>"
-         (snippet2 nil)))
+         (snippet-conditional nil)))
   (is (= "<h1>Default Title</h1>"
-         (snippet2 {})))
+         (snippet-conditional {})))
   (is (= "<h1>Cool Specific Title</h1>"
-         (snippet2 {:title "Cool Specific Title"}))))
+         (snippet-conditional {:title "Cool Specific Title"}))))
+
+;; Test the deref key access syntax
+(deftemplate snippet-deref1
+  [:h1 @title])
+
+(deftemplate snippet-deref2
+  [:h1 @test/title])
+
+(deftest test-deref-syntax
+  (is (= "<h1>Title</h1>"
+         (snippet-deref1 {:title "Title"})))
+  (is (= "<h1></h1>"
+         (snippet-deref1 {})))
+  (is (= "<h1>Title</h1>"
+         (snippet-deref2 {:test/title "Title"}))))
+
+;; Test a for form
+(deftemplate snippet-for
+  [:ul (for [a @items]
+         [:li a])])
+
+(deftest test-for
+  (is (= "<ul><li>Item 1</li></ul>"
+         (snippet-for {:items ["Item 1"]})))
+  (is (= "<ul><li>Item 1</li><li>Item 2</li></ul>"
+         (snippet-for {:items ["Item 1" "Item 2"]}))))
+
+;; Test math in a form
+(deftemplate snippet-math1
+  [:h1 "Welcome Visitor #" (+ 1 2)])
+
+(deftemplate snippet-math2
+  [:h1 "Welcome Visitor #" (+ @males @females)])
+
+(deftest test-math
+  (is (= "<h1>Welcome Visitor #3</h1>"
+         (snippet-math1)))
+  (is (= "<h1>Welcome Visitor #11</h1>"
+         (snippet-math2 {:males 5 :females 6}))))
+
+;; Test string-pasting.
+(deftemplate snippet-stringpaste1
+  [:h1 "Welcome " (reverse @firstname) (str " " @lastname) "!"])
+
+(deftemplate snippet-stringpaste2
+  [:h1 "Welcome " (str/upper-case @person) "!"])
+
+(deftest test-stringpaste
+  (is (= "<h1>Welcome Fatty Corpuscle!</h1>"
+         (snippet-stringpaste1 {:firstname "yttaF" :lastname "Corpuscle"})))
+  (is (= "<h1>Welcome FATTY CORPUSCLE!</h1>"
+         (snippet-stringpaste2 {:person "fatty corpuscle"}))))
