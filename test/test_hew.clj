@@ -121,3 +121,14 @@
          (snippet-stringpaste1 {:firstname "yttaF" :lastname "Corpuscle"})))
   (is (= "<h1>Welcome FATTY CORPUSCLE!</h1>"
          (snippet-stringpaste2 {:person "fatty corpuscle"}))))
+
+;; Test deep data structure extraction.
+(deftemplate snippet-deepdata
+  [:h1 "Children of " (:name @person)]
+  [:ul (for [c (:children @person)]
+         [:li c])])
+
+(deftest test-deepdata
+  (is (= "<h1>Children of Peter Griffin</h1><ul><li>Chris</li><li>Meg</li><li>Stewie</li></ul>"
+         (snippet-deepdata {:person {:name "Peter Griffin"
+                                     :children ["Chris" "Meg" "Stewie"]}}))))
