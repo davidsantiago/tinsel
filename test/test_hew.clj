@@ -132,3 +132,14 @@
   (is (= "<h1>Children of Peter Griffin</h1><ul><li>Chris</li><li>Meg</li><li>Stewie</li></ul>"
          (snippet-deepdata {:person {:name "Peter Griffin"
                                      :children ["Chris" "Meg" "Stewie"]}}))))
+
+;; Test modifying the contents of an argument map inside a template.
+(deftemplate called-snippet
+  [:li @item])
+(deftemplate calling-snippet
+  [:ul (for [i @items]
+         (call called-snippet {:item i}))])
+
+(deftest test-dynamic-argmaps
+  (is (= "<ul><li>1</li><li>2</li><li>3</li></ul>"
+         (calling-snippet {:items [1 2 3]}))))
