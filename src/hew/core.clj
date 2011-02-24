@@ -52,7 +52,7 @@
 (defn apply-transforms
   [transform-list forms]
   (if (empty? transform-list)
-    (do (prn "After transform: " forms)
+    (do (prn "After all transforms: " forms)
         forms)
     (recur (rest transform-list)
            (apply-transform (first transform-list) forms))))
