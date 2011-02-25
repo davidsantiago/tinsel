@@ -25,7 +25,7 @@
 ;; A transformation, but based on template args.
 (deftemplate argument-transform-template [[:title "Title"] [:h1 "Hi!"]]
   [arg-map]
-  #(= (first %) :title)
+  #(= (first %) "title")
   (fn [node] [:title '(:title arg-map)]))
 
 (deftest test-argument-transform-template
@@ -35,11 +35,9 @@
 ;; Two transformations.
 (deftemplate multiple-transform-template [[:title "Title"] [:h1 "Hi!"]]
   [arg-map]
-  #(= (first %)
-      :title)
+  #(= (first %) "title")
   (fn [node] [:title '(:title arg-map)])
-  #(= (first %)
-      :h1)
+  #(= (first %) "h1")
   (fn [node] [:h1 '(:header arg-map)]))
 
 (deftest test-multiple-transform-template

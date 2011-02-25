@@ -83,11 +83,14 @@
     (do (prn "After all transforms: " forms)
         forms)
     (recur (rest transform-list)
-           (apply-transform (first transform-list) forms))))
+           (doall (for [t forms]
+                    (do
+                      (println "Transforming " t)
+                      (apply-transform (first transform-list) t)))))))
 
 (defmacro deftemplate
   [tmpl-name source arg-list & transforms]
-  (let [source-forms (map normalize-form source)
+  (let [source-forms (map normalize-form source) ;; ["tag" {attrs} content...]
         transforms (partition 2 (map eval transforms))
         transformed-forms (apply-transforms transforms source-forms)]
     `(defn ~tmpl-name
