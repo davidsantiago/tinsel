@@ -15,7 +15,7 @@
 ;; Slightly more advanced: a transformation, but not based on arguments.
 (deftemplate simple-transform-template [[:title "Title"] [:h1 "Hi!"]]
   [arg-map]
-  (fn [node] (= (first node) :title))
+  (fn [node] (= (first node) "title"))
   (fn [node] [:title "Cool Title"]))
 
 (deftest test-simple-transform-template
@@ -31,3 +31,18 @@
 (deftest test-argument-transform-template
   (is (= "<title>Cool Title</title><h1>Hi!</h1>"
          (argument-transform-template {:title "Cool Title"}))))
+
+;; Two transformations.
+(deftemplate multiple-transform-template [[:title "Title"] [:h1 "Hi!"]]
+  [arg-map]
+  #(= (first %)
+      :title)
+  (fn [node] [:title '(:title arg-map)])
+  #(= (first %)
+      :h1)
+  (fn [node] [:h1 '(:header arg-map)]))
+
+(deftest test-multiple-transform-template
+  (is (= "<title>Cool Title</title><h1>A Header</h1>"
+         (multiple-transform-template {:title "Cool Title"
+                                       :header "A Header"}))))
