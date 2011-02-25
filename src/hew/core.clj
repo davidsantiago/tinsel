@@ -59,10 +59,10 @@
 
 (defn apply-transform
   "Given a transform (a selector function and a tranformation function), applies
-   it where the selector dictates to the list of forms given."
-  [[select? transform] forms]
+   it where the selector dictates to the form given."
+  [[select? transform] form]
   ;; Iterate through all the nodes in depth-first order, replacing any applicable.
-  (loop [loc (zip/vector-zip forms)]
+  (loop [loc (zip/vector-zip form)]
     ;; If this node is selected by the selector, transform it.
     (let [transformed-loc (if (and (vector? (zip/node loc))
                                    (select? (zip/node loc)))
@@ -83,10 +83,8 @@
     (do (prn "After all transforms: " forms)
         forms)
     (recur (rest transform-list)
-           (doall (for [t forms]
-                    (do
-                      (println "Transforming " t)
-                      (apply-transform (first transform-list) t)))))))
+           (doall (for [form forms]
+                    (apply-transform (first transform-list) form))))))
 
 (defmacro deftemplate
   [tmpl-name source arg-list & transforms]
