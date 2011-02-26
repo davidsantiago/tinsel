@@ -44,3 +44,14 @@
   (is (= "<title>Cool Title</title><h1>A Header</h1>"
          (multiple-transform-template {:title "Cool Title"
                                        :header "A Header"}))))
+
+;; Select by id.
+(deftemplate select-id-template
+  [[:body#short-id [:h1 {:id "long-id"} "A heading."]]]
+  [arg-map]
+  (id= :long-id)
+  (fn [node] [:h1 {:id "long-id"} '(:heading arg-map)]))
+
+(deftest test-select-id-template
+  (is (= "<body id=\"short-id\"><h1 id=\"long-id\">Some cool heading.</h1></body>"
+         (select-id-template {:heading "Some cool heading."}))))
