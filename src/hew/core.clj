@@ -5,6 +5,15 @@
             [clojure.walk :as walk]))
 
 ;;
+;; Syntax/Thunks
+;;
+
+(defn id=
+  [id]
+  (fn [node] (= (name id)
+                (name (first node)))))
+
+;;
 ;; Compiler
 ;;
 ;; Note: Everything here runs at template compile time (that is, macro
@@ -34,11 +43,14 @@
 
 (defn normalize-form
   "Given a hiccup form, recursively normalizes it using normalize-element."
-  [form-list]
-  (walk/postwalk #(if (vector? %)
-                    (normalize-element %)
-                    %)
-                 form-list))
+  [form]
+  ;; Do a pre-order walk and save the first two items, then do the children,
+  ;; then glue them back together.
+  (let [[tag attrs & contents] (normalize-element form)]
+    (apply vector tag attrs (map #(if (vector? %)
+                                    (normalize-form %)
+                                    %)
+                                 contents))))
 
 (defn code-form?
   "Takes a form and returns true if it is a 'code' form. In other words,
@@ -48,14 +60,6 @@
   (and (sequential? form) ;; (seq? {}) -> true, (sequential? {}) -> false
        (not (vector? form))
        (not= 'quote (first form))))
-
-(comment (defn transform-forms
-           "This function goes through the forms passed in and makes modifications to
-   the structure so that it becomes correctly executable code. For now, this
-   means adding the map argument to template functions."
-           [forms arg-name]
-           (postwalk (partial syntax-transformer arg-name)
-                     forms)))
 
 (defn apply-transform
   "Given a transform (a selector function and a tranformation function), applies
