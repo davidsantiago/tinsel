@@ -10,8 +10,9 @@
 
 (defn id=
   [id]
-  (fn [node] (= (name id)
-                (name (first node)))))
+  (fn [node]
+    (= (name id)
+       (name (:id (second node))))))
 
 ;;
 ;; Compiler
