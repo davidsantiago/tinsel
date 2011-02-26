@@ -8,7 +8,15 @@
 ;; Syntax/Thunks
 ;;
 
+(defn tag=
+  "Returns a function that returns true if the node has tag equal to arg."
+  [tag]
+  (fn [node]
+    (= (name tag)
+       (name (first node)))))
+
 (defn id=
+  "Returns a function that returns true if the node has id equal to id."
   [id]
   (fn [node]
     (= (name id)

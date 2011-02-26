@@ -45,6 +45,17 @@
          (multiple-transform-template {:title "Cool Title"
                                        :header "A Header"}))))
 
+;; Select multiple nodes by tag.
+(deftemplate select-tag-template
+  [[:body#some-id [:h1] [:h1]]]
+  [arg-map]
+  (tag= :h1)
+  (fn [node] [:h1 '(:heading arg-map)]))
+
+(deftest test-select-tag-template
+  (is (= "<body id=\"some-id\"><h1>HEADING</h1><h1>HEADING</h1></body>"
+         (select-tag-template {:heading "HEADING"}))))
+
 ;; Select by id.
 (deftemplate select-id-template
   [[:body#short-id [:h1 {:id "long-id"} "A heading."]]]
