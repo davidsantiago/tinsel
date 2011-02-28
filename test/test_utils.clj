@@ -33,7 +33,11 @@
   (is (= ["html" {:id "doc" :class nil}]
          (utils/normalize-form [:html#doc])))
   (is (= ["html" {:id :doc :class nil}]
-         (utils/normalize-form [:html#fakeout {:id :doc}]))))
+         (utils/normalize-form [:html#fakeout {:id :doc}])))
+  (is (= ["html" {:id nil :class "a b c"}]
+         (utils/normalize-form [:html.a.b.c])))
+  (is (= ["html" {:id nil :class "c"}] ;; A sucky behavior, but matches hiccup.
+           (utils/normalize-form [:html.a.b {:class "c"}]))))
 
 (deftest recursive-normalize-form
   (is (= ["html" {:id nil :class nil}
