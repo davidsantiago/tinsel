@@ -8,24 +8,24 @@
 ;;
 ;; Selectors
 ;;
-;; Note: Selectors are functions of a node that return true if that node is the
-;; one of interest. They do not execute in the environment of the template; that
-;; is, your template arguments are not available. Thus, selections must be based
-;; entirely on properties of the template itself.
+;; Note: Selectors are functions of a zipper location that return true if that
+;; hiccup node is the one of interest. They do not execute in the environment
+;; of the template; that is, your template arguments are not available. Thus,
+;; selections must be based entirely on properties of the template itself.
 
 (defn tag=
   "Returns a function that returns true if the node has tag equal to arg."
   [tag]
-  (fn [node]
+  (fn [zip-loc]
     (= (utils/name tag)
-       (utils/name (first node)))))
+       (utils/name (first (zip/node zip-loc))))))
 
 (defn id=
   "Returns a function that returns true if the node has id equal to id."
   [id]
-  (fn [node]
+  (fn [zip-loc]
     (let [res (= (utils/name id)
-                 (utils/name (:id (second node))))]
+                 (utils/name (:id (second (zip/node zip-loc)))))]
       res)))
 
 ;;
@@ -45,6 +45,20 @@
              (second node#)
              (quote ~new-content))))
 
+(defmacro append-content
+  [new-content]
+  `(fn [node#]
+     (conj node# (quote ~new-content))))
+
+(defmacro prepend-content
+  [new-content]
+  `(fn [node#]
+     (apply vector
+            (first node#)
+            (second node#)
+            (quote ~new-content)
+            (rest (rest node#)))))
+
 ;;
 ;; Compiler
 ;;
@@ -59,7 +73,7 @@
   (loop [loc (zip/vector-zip form)]
     ;; If this node is selected by the selector, transform it.
     (let [transformed-loc (if (and (vector? (zip/node loc))
-                                   (select? (zip/node loc)))
+                                   (select? loc))
                             (zip/edit loc transform)
                             loc)]
       (if (zip/end? transformed-loc)

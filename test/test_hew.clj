@@ -2,7 +2,8 @@
   (:use hew.core
         clojure.test)
   ;; These two are just for testing, see test-ns-membership.
-  (:require [clojure.string :as str])
+  (:require [clojure.string :as str]
+            [clojure.zip :as zip])
   (:use clojure.walk))
 
 ;; The most basic test: one with no transformations.
@@ -15,7 +16,7 @@
 ;; Slightly more advanced: a transformation, but not based on arguments.
 (deftemplate simple-transform-template [[:title "Title"] [:h1 "Hi!"]]
   [arg-map]
-  (fn [node] (= (first node) "title"))
+  (fn [zip-loc] (= (first (zip/node zip-loc)) "title"))
   (fn [node] [:title "Cool Title"]))
 
 (deftest test-simple-transform-template
@@ -25,7 +26,7 @@
 ;; A transformation, but based on template args.
 (deftemplate argument-transform-template [[:title "Title"] [:h1 "Hi!"]]
   [arg-map]
-  #(= (first %) "title")
+  #(= (first (zip/node %)) "title")
   (fn [node] [:title '(:title arg-map)]))
 
 (deftest test-argument-transform-template
@@ -35,9 +36,9 @@
 ;; Two transformations.
 (deftemplate multiple-transform-template [[:title "Title"] [:h1 "Hi!"]]
   [arg-map]
-  #(= (first %) "title")
+  #(= (first (zip/node %)) "title")
   (fn [node] [:title '(:title arg-map)])
-  #(= (first %) "h1")
+  #(= (first (zip/node %)) "h1")
   (fn [node] [:h1 '(:header arg-map)]))
 
 (deftest test-multiple-transform-template
@@ -87,3 +88,27 @@
 (deftest test-set-content-template
   (is (= "<body><h1 id=\"replace-me\">You have been replaced.</h1></body>"
          (set-content-template {:replacement "You have been replaced."}))))
+
+;; Append content
+(deftemplate append-content-template
+  [[:body [:ul#add-to-me
+           [:li "Add something after me!"]]]]
+  [arg-map]
+  (id= :add-to-me)
+  (append-content (:addition arg-map)))
+
+(deftest test-append-content-template
+  (is (= "<body><ul id=\"add-to-me\"><li>Add something after me!</li><li>Ohai!</li></ul></body>"
+         (append-content-template {:addition [:li "Ohai!"]}))))
+
+;; Prepend content
+(deftemplate prepend-content-template
+  [[:body [:ul#add-to-me
+           [:li "Add something before me!"]]]]
+  [arg-map]
+  (id= :add-to-me)
+  (prepend-content (:addition arg-map)))
+
+(deftest test-prepend-content-template
+  (is (= "<body><ul id=\"add-to-me\"><li>Ohai!</li><li>Add something before me!</li></ul></body>"
+         (prepend-content-template {:addition [:li "Ohai!"]}))))
