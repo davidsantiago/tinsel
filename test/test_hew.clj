@@ -90,28 +90,46 @@
          (set-content-template {:replacement "You have been replaced."}))))
 
 ;; Append content
-(deftemplate append-content-template
+(deftemplate append-content-template1
   [[:body [:ul#add-to-me
            [:li "Add something after me!"]]]]
   [arg-map]
   (id= :add-to-me)
   (append-content (:addition arg-map)))
 
+(deftemplate append-content-template2
+  [[:body [:ul#add-to-me
+           [:li "Add something after me!"]]]]
+  [addition]
+  (id= :add-to-me)
+  (append-content addition))
+
 (deftest test-append-content-template
   (is (= "<body><ul id=\"add-to-me\"><li>Add something after me!</li><li>Ohai!</li></ul></body>"
-         (append-content-template {:addition [:li "Ohai!"]}))))
+         (append-content-template1 {:addition [:li "Ohai!"]})))
+  (is (= "<body><ul id=\"add-to-me\"><li>Add something after me!</li><li>Ohai!</li></ul></body>"
+         (append-content-template2 [:li "Ohai!"]))))
 
 ;; Prepend content
-(deftemplate prepend-content-template
+(deftemplate prepend-content-template1
   [[:body [:ul#add-to-me
            [:li "Add something before me!"]]]]
   [arg-map]
   (id= :add-to-me)
   (prepend-content (:addition arg-map)))
 
+(deftemplate prepend-content-template2
+  [[:body [:ul#add-to-me
+           [:li "Add something before me!"]]]]
+  [addition]
+  (id= :add-to-me)
+  (prepend-content addition))
+
 (deftest test-prepend-content-template
   (is (= "<body><ul id=\"add-to-me\"><li>Ohai!</li><li>Add something before me!</li></ul></body>"
-         (prepend-content-template {:addition [:li "Ohai!"]}))))
+         (prepend-content-template1 {:addition [:li "Ohai!"]})))
+  (is (= "<body><ul id=\"add-to-me\"><li>Ohai!</li><li>Add something before me!</li></ul></body>"
+         (prepend-content-template2 [:li "Ohai!"]))))
 
 ;; Set Attributes
 (deftemplate set-attribute-template1
