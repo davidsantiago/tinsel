@@ -59,6 +59,14 @@
             (quote ~new-content)
             (rest (rest node#)))))
 
+(defmacro set-attrs
+  [attr-map]
+  `(fn [node#]
+     (vector (first node#)
+             (merge (second node#)
+                    (quote ~attr-map)))))
+
+
 ;;
 ;; Compiler
 ;;

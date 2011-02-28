@@ -112,3 +112,22 @@
 (deftest test-prepend-content-template
   (is (= "<body><ul id=\"add-to-me\"><li>Ohai!</li><li>Add something before me!</li></ul></body>"
          (prepend-content-template {:addition [:li "Ohai!"]}))))
+
+;; Set Attributes
+(deftemplate set-attribute-template1
+  [[:body [:img]]]
+  [arg-map]
+  (tag= :img)
+  (set-attrs {:src (:url arg-map)}))
+
+(deftemplate set-attribute-template2
+  [[:body [:img]]]
+  [arg-url]
+  (tag= :img)
+  (set-attrs {:src arg-url}))
+
+(deftest test-set-attribute-template
+  (is (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
+         (set-attribute-template1 {:url "http://example.com/img.jpg"}))
+      (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
+         (set-attribute-template2 "http://example.com/img.jpg"))))
