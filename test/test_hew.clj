@@ -45,6 +45,11 @@
          (multiple-transform-template {:title "Cool Title"
                                        :header "A Header"}))))
 
+;;
+;; Test Selectors
+;;
+
+
 ;; Select multiple nodes by tag.
 (deftemplate select-tag-template
   [[:body#some-id [:h1] [:h1]]]
@@ -66,3 +71,19 @@
 (deftest test-select-id-template
   (is (= "<body id=\"short-id\"><h1 id=\"long-id\">Some cool heading.</h1></body>"
          (select-id-template {:heading "Some cool heading."}))))
+
+
+;;
+;; Test Transformers
+;;
+
+;; Set content
+(deftemplate set-content-template
+  [[:body [:h1#replace-me "Replace me!"]]]
+  [arg-map]
+  (id= :replace-me)
+  (set-content (:replacement arg-map)))
+
+(deftest test-set-content-template
+  (is (= "<body><h1 id=\"replace-me\">You have been replaced.</h1></body>"
+         (set-content-template {:replacement "You have been replaced."}))))
