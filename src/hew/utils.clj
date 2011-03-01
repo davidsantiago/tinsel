@@ -18,8 +18,9 @@
    it is attempting to express code to be executed for its content, instead
    of being a marker for hiccup to process into HTML."
   [form]
-  (and (seq? form) ;; Macros return seqs, not lists.
-       (not= 'quote (first form))))
+  (or (symbol? form)
+      (and (seq? form) ;; Macros return seqs, not lists.
+           (not= 'quote (first form)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adapted from hiccup/core.clj for compatibility.

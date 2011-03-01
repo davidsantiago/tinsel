@@ -17,7 +17,8 @@
   (is (= true (utils/code-form? '(+ 1 2))))
   (is (= false (utils/code-form? ['+ 1 2])))
   (is (= false (utils/code-form? {:+ 1})))
-  (is (= true (utils/code-form? (seq ['+ 1 2])))))
+  (is (= true (utils/code-form? (seq ['+ 1 2]))))
+  (is (= true (utils/code-form? 'some-symbol))))
 
 ;;
 ;; Do some testing of normalize-form in various ways.
