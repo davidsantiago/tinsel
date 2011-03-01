@@ -79,15 +79,23 @@
 ;;
 
 ;; Set content
-(deftemplate set-content-template
+(deftemplate set-content-template1
   [[:body [:h1#replace-me "Replace me!"]]]
   [arg-map]
   (id= :replace-me)
   (set-content (:replacement arg-map)))
 
+(deftemplate set-content-template2
+  [[:body [:h1#replace-me "Replace me!"]]]
+  [arg-map]
+  (id= :replace-me)
+  (set-content [:em (:replacement arg-map)]))
+
 (deftest test-set-content-template
   (is (= "<body><h1 id=\"replace-me\">You have been replaced.</h1></body>"
-         (set-content-template {:replacement "You have been replaced."}))))
+         (set-content-template1 {:replacement "You have been replaced."})))
+  (is (= "<body><h1 id=\"replace-me\"><em>You have been replaced.</em></h1></body>"
+         (set-content-template2 {:replacement "You have been replaced."}))))
 
 ;; Append content
 (deftemplate append-content-template1
@@ -149,3 +157,6 @@
          (set-attribute-template1 {:url "http://example.com/img.jpg"}))
       (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
          (set-attribute-template2 "http://example.com/img.jpg"))))
+
+
+

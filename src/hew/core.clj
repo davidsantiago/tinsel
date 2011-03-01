@@ -2,6 +2,7 @@
   "Enlive-style templates with Hiccup."
   (:use [hiccup core])
   (:require [hew.utils :as utils]
+            [pl.danieljanus.tagsoup :as ts]
             [clojure.zip :as zip]
             [clojure.walk :as walk]))
 
@@ -40,24 +41,33 @@
 
 (defmacro set-content
   [new-content]
-  `(fn [node#]
-     (vector (first node#)
-             (second node#)
-             (quote ~new-content))))
+  (let [normalized-new-content (if (vector? new-content)
+                                 (utils/normalize-form new-content)
+                                 new-content)]
+    `(fn [node#]
+       (vector (first node#)
+               (second node#)
+               (quote ~normalized-new-content)))))
 
 (defmacro append-content
   [new-content]
-  `(fn [node#]
-     (conj node# (quote ~new-content))))
+  (let [normalized-new-content (if (vector? new-content)
+                                 (utils/normalize-form new-content)
+                                 new-content)]
+    `(fn [node#]
+       (conj node# (quote ~normalized-new-content)))))
 
 (defmacro prepend-content
   [new-content]
-  `(fn [node#]
-     (apply vector
-            (first node#)
-            (second node#)
-            (quote ~new-content)
-            (rest (rest node#)))))
+  (let [normalized-new-content (if (vector? new-content)
+                                 (utils/normalize-form new-content)
+                                 new-content)]
+    `(fn [node#]
+       (apply vector
+              (first node#)
+              (second node#)
+              (quote ~normalized-new-content)
+              (rest (rest node#))))))
 
 (defmacro set-attrs
   [attr-map]
@@ -80,13 +90,12 @@
   ;; Iterate through all the nodes in depth-first order, replacing any applicable.
   (loop [loc (zip/vector-zip form)]
     ;; If this node is selected by the selector, transform it.
-    (let [transformed-loc (if (and (vector? (zip/node loc))
-                                   (select? loc))
-                            (zip/edit loc transform)
-                            loc)]
-      (if (zip/end? transformed-loc)
-        (zip/root transformed-loc)
-        (recur (zip/next transformed-loc))))))
+    (if (zip/end? loc)
+      (zip/root loc)
+      (recur (zip/next (if (and (vector? (zip/node loc))
+                                (select? loc))
+                         (zip/rightmost (zip/down (zip/edit loc transform)))
+                         loc))))))
 
 (defn apply-transforms
   "transform-list is a list of pairs of functions. The first in each pair is a
@@ -110,3 +119,28 @@
     `(defn ~tmpl-name
        ~arg-list
        (html ~@transformed-forms))))
+
+;;
+;; Template Loading
+;;
+
+(defn html-file
+  "Parse HTML out of the argument (which can be anything accepted by
+   clojure.contrib's reader function)."
+  [file-path]
+  (vector (ts/parse file-path)))
+
+(defn html-string
+  "Parse HTML out of the string given."
+  [html-string]
+  (vector (ts/parse-string html-string)))
+
+(defn hiccup-file
+  "Parse hiccup forms out of the argument."
+  [file-path]
+  (vector (load file-path)))
+
+(defn hiccup-string
+  "Parse hiccup forms out of the string argument."
+  [hiccup-string]
+  (vector (load-string hiccup-string)))

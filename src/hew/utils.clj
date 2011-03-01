@@ -24,7 +24,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adapted from hiccup/core.clj for compatibility.
 (def ^{:private true
-       :doc "Regular exnpression that parses a CSS-style id and class from a tag name."}
+       :doc "Regular expression that parses a CSS-style id and class from a tag name."}
      re-tag #"([^\s\.#]+)(?:#([^\s\.#]+))?(?:\.([^\s#]+))?")
 
 (defn- normalize-element
@@ -44,7 +44,8 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn normalize-form
-  "Given a hiccup form, recursively normalizes it using normalize-element."
+  "Given a hiccup form (vector), recursively normalizes it using
+   normalize-element."
   [form]
   ;; Do a pre-order walk and save the first two items, then do the children,
   ;; then glue them back together.
