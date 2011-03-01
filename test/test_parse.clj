@@ -7,11 +7,7 @@
   (is (= [[:html {}]]
            (html-string "<html></html>"))))
 
-(deftest test-parse-hiccup-string
-  (is (= [[:html]]
-           (hiccup-string "[:html]"))))
-
-(deftemplate html-template [[:html [:body#a]]] ;  (html-string "<html></html>")
+(deftemplate html-template (html-string "<html></html>")
   [arg-map]
   (tag= :html)
   (set-content [:head [:title (:msg arg-map)]]))
@@ -19,3 +15,12 @@
 (deftest test-html-template
   (is (= "<html><head><title>Wow, that worked!</title></head></html>"
          (html-template {:msg "Wow, that worked!"}))))
+
+(deftemplate hiccup-template [[:html]]
+  [arg-map]
+  (tag= :html)
+  (set-content [:head [:title (:msg arg-map)]]))
+
+(deftest test-hiccup-template
+  (is (= "<html><head><title>Wow, that worked!</title></head></html>"
+         (hiccup-template {:msg "Wow, that worked!"}))))
