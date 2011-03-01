@@ -91,11 +91,20 @@
   (id= :replace-me)
   (set-content [:em (:replacement arg-map)]))
 
+;; Make sure we can replace the root node's content.
+(deftemplate set-content-template3
+  [[:html [:h1 "I'm going to be replaced!"]]]
+  [arg-map]
+  (tag= :html)
+  (set-content [:h2 (:replacement arg-map)]))
+
 (deftest test-set-content-template
   (is (= "<body><h1 id=\"replace-me\">You have been replaced.</h1></body>"
          (set-content-template1 {:replacement "You have been replaced."})))
   (is (= "<body><h1 id=\"replace-me\"><em>You have been replaced.</em></h1></body>"
-         (set-content-template2 {:replacement "You have been replaced."}))))
+         (set-content-template2 {:replacement "You have been replaced."})))
+  (is (= "<html><h2>I'm the replacement.</h2></html>"
+         (set-content-template3 {:replacement "I'm the replacement."}))))
 
 ;; Append content
 (deftemplate append-content-template1
@@ -112,11 +121,20 @@
   (id= :add-to-me)
   (append-content addition))
 
+;; Make sure we can append content to an empty root node.
+(deftemplate append-content-template3
+  [[:html#doc]]
+  [addition]
+  (id= :doc)
+  (append-content addition))
+
 (deftest test-append-content-template
   (is (= "<body><ul id=\"add-to-me\"><li>Add something after me!</li><li>Ohai!</li></ul></body>"
          (append-content-template1 {:addition [:li "Ohai!"]})))
   (is (= "<body><ul id=\"add-to-me\"><li>Add something after me!</li><li>Ohai!</li></ul></body>"
-         (append-content-template2 [:li "Ohai!"]))))
+         (append-content-template2 [:li "Ohai!"])))
+  (is (= "<html id=\"doc\"><h1>The content.</h1></html>"
+         (append-content-template3 [:h1 "The content."]))))
 
 ;; Prepend content
 (deftemplate prepend-content-template1
@@ -133,11 +151,20 @@
   (id= :add-to-me)
   (prepend-content addition))
 
+;; Make sure we can prepend content to an empty root node.
+(deftemplate prepend-content-template3
+  [[:html#doc]]
+  [addition]
+  (tag= :html)
+  (prepend-content addition))
+
 (deftest test-prepend-content-template
   (is (= "<body><ul id=\"add-to-me\"><li>Ohai!</li><li>Add something before me!</li></ul></body>"
          (prepend-content-template1 {:addition [:li "Ohai!"]})))
   (is (= "<body><ul id=\"add-to-me\"><li>Ohai!</li><li>Add something before me!</li></ul></body>"
-         (prepend-content-template2 [:li "Ohai!"]))))
+         (prepend-content-template2 [:li "Ohai!"])))
+  (is (= "<html id=\"doc\"><h1>The content.</h1></html>"
+         (prepend-content-template3 [:h1 "The content."]))))
 
 ;; Set Attributes
 (deftemplate set-attribute-template1
