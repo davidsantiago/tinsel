@@ -120,11 +120,11 @@ this restriction is relatively minor, though.
 
 A transformer is a function of a Hiccup vector that returns another Hiccup
 vector that should replace it. Unlike selectors, transformers do have access
-to the template's arguments and run when the template is invoked to render
-output. Conceptually, transformers are easier to think about, since they just
-map a Hiccup vector to another Hiccup vector. They can be a little trickier to
-write, however, since they often have to copy a lot from the input vector in
-order to not clobber everything other than what they are interested in.
+to the template's arguments. Conceptually, transformers are easier to think
+about, since they just map a Hiccup vector to another Hiccup vector. They can
+be a little trickier to write, however, since they often have to copy a lot
+from the input vector in order to not clobber everything other than what they
+are interested in. And for another reason I'll get into in a moment.
 
 As a simple example, here is a possible transformer you could write to remove
 the children of an HTML node.
@@ -136,6 +136,36 @@ the children of an HTML node.
 		
 		user> (untitle-template)
 		"<html><h1></h1></html>"
+
+But I've left something out above. Transformers actually run at compile time
+also, just like selectors. Their output replaces the given node in the tree
+at compile-time. So, although I said that they have access to the template's
+arguments, it's really only the case if you write the transformer to ensure
+that is the case. This is done by making sure that any code that is given
+to a transformer as an argument is inserted into the Hiccup form as quoted
+code.
+
+As an example, let's make a transformer to change the title of a page.
+
+	(deftemplate retitle-template [[:html [:h1 "Some page title"]]]
+		[new-title]
+		(tag= :h1)
+		(fn [node] (vector (first node) (second node) 'new-title)))
+		
+		user> (retitle-template "The new title")
+		"<html><h1>The new title</h1></html>"
+
+By keeping the argument unevaluated, this guarantees that they will be
+evaluated in the context of the function that `deftemplate` builds. In the
+example above, a string was passed in, but the user could also pass in code:
+
+	user> (retitle-template (str "The " (+ 1 1) "nd title"))
+	"<html><h1>The 2nd title</h1></html>"
+
+So ultimately transformers can also be tricky to write. I am working to make
+sure that Tinsel has a good number of transformers that will hopefully span
+just about any use cases I can find, but again, if you need to write your own,
+you can go ahead and do so.
 
 Bugs and Missing Features
 -------------------------
