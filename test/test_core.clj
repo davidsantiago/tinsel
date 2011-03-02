@@ -3,7 +3,8 @@
         clojure.test)
   ;; These two are just for testing, see test-ns-membership.
   (:require [clojure.string :as str]
-            [clojure.zip :as zip])
+            [clojure.zip :as zip]
+            [hiccup.core :as hiccup])
   (:use clojure.walk))
 
 ;; The most basic test: one with no transformations.
@@ -185,5 +186,30 @@
       (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
          (set-attribute-template2 "http://example.com/img.jpg"))))
 
+;; A slightly larger template, check output quality against hiccup.
+(deftemplate medium-template
+  [[:html
+    [:head
+     [:title "Literal String"]]
+    [:body
+     [:div.example]
+     [:ul.times-table]]]]
+  [text]
+  (tag= :div)
+  (set-content text)
+  (tag= :ul)
+  (set-content (for [n (range 1 13)]
+                 [:li n " * 9 = " (* n 9)])))
 
-
+(deftest test-medium-template
+  (is (= (medium-template "Some text")
+         (let [text "Some text"]
+           (hiccup/html
+            [:html
+             [:head
+              [:title "Literal String"]]
+             [:body
+              [:div.example text]
+              [:ul.times-table
+               (for [n (range 1 13)]
+                 [:li n " * 9 = " (* n 9)])]]])))))
