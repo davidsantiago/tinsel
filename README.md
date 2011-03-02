@@ -22,16 +22,49 @@ transformers. The actual mechanics are a bit more involved, but basically, a
 selector is a function called on every node in the HTML tree, returning true
 if and only if that node should have the corresponding transformer applied.
 A transformer is another function that takes a node and returns a new node
-that should be inserted in its place.
+that should be inserted in its place before final rendering.
+
+In my testing, Tinsel renders templates exactly as fast as the equivalent
+Hiccup code, which is itself just a tad slower than raw string concatenation.
+The results below are from 
+[viewbenchmarks](http://github.com/davidsantiago/viewbenchmarks)
+
+	hiccup
+	"Elapsed time: 8.295 msecs"
+	"Elapsed time: 5.585 msecs"
+	"Elapsed time: 12.104 msecs"
+	hiccup (type-hint)
+	"Elapsed time: 5.612 msecs"
+	"Elapsed time: 5.122 msecs"
+	"Elapsed time: 3.392 msecs"
+	str
+	"Elapsed time: 4.911 msecs"
+	"Elapsed time: 3.124 msecs"
+	"Elapsed time: 3.571 msecs"
+	tinsel
+	"Elapsed time: 5.333 msecs"
+	"Elapsed time: 4.347 msecs"
+	"Elapsed time: 3.724 msecs"
+	tinsel (type-hint)
+	"Elapsed time: 4.546 msecs"
+	"Elapsed time: 4.192 msecs"
+	"Elapsed time: 3.262 msecs"
+
+As you can see, Tinsel still allows type-hinting just like Hiccup (really, it
+is passing on the type-hinted forms to Hiccup). I believe the initial slow run
+of the first test is due to JIT compilation; when the order of tests is
+changed around, the numbers still look the same (that is, whatever is first
+goes slowest). However, it is important to remember that templates can only go
+as fast as the code you ask them to evaluate at run-time.
 
 The main new construct is the `deftemplate` macro. It takes the following
 arguments:
 
-	1. A name
-	2. A sequence of hiccup forms defining the markup
-	3. An argument list (for your use in the transformers)
-	4. As many selector/transformer pairs as you like (they will be run one
-		after the other in the order given)
+1. A name
+2. A sequence of hiccup forms defining the markup
+3. An argument list (for your use in the transformers)
+4. As many selector/transformer pairs as you like (they will be run one
+after the other in the order given)
 	
 As the simplest possible example, consider
 
@@ -58,15 +91,15 @@ services the request.
 
 Which outputs
 
-	user> (welcome-template "Don")
-	"<h1 id=\"user-welcome\">Welcome Don!</h1>"
+	user> (welcome-template "Don Draper")
+	"<h1 id=\"user-welcome\">Welcome Don Draper!</h1>"
 
-Here we made the template take a single argument, user-name, which is a string
-containing the user's name. We also used the `id=` selector to select any node
-with id "user-welcome". Then we gave the `set-content` transformer some code
-to generate the string to set the content to. Note that the user-name argument
-is visible to the transformer. Note also that set-content left the tag and
-attributes unchanged.
+Here we made the template take a single argument, `user-name`, which is a
+string containing the user's name. We also used the `id=` selector to select
+any node with id "user-welcome". Then we gave the `set-content` transformer
+some code to generate the string to set the content to. Note that the
+user-name argument is visible to the transformer. Note also that set-content
+left the tag and attributes unchanged.
 
 Selectors and Transformers
 --------------------------
@@ -112,19 +145,20 @@ but it would make it impossible to write selectors based on the node's
 parents, siblings, or other factors.
 
 Also note that selectors **don't have access to the template arguments**.
-This is because selectors are run at compile-time and do not run at run-time,
-so they do not have access to the values of the template arguments. I believe
-this restriction is relatively minor, though.
+This is because selectors are run at compile-time and not at run-time, so they
+do not have access to the values of the template arguments. I believe this
+restriction is relatively minor, though.
 
 ###Transformers###
 
 A transformer is a function of a Hiccup vector that returns another Hiccup
 vector that should replace it. Unlike selectors, transformers do have access
-to the template's arguments. Conceptually, transformers are easier to think
-about, since they just map a Hiccup vector to another Hiccup vector. They can
-be a little trickier to write, however, since they often have to copy a lot
-from the input vector in order to not clobber everything other than what they
-are interested in. And for another reason I'll get into in a moment.
+to the template's arguments (kinda, keep reading). Conceptually, transformers
+are easier to think about, since they just map a Hiccup vector to another
+Hiccup vector. They can be a little trickier to write, however, since they
+often have to copy a lot from the input vector in order to not clobber
+everything other than what they are interested in. And for another reason I'll
+get into in a moment.
 
 As a simple example, here is a possible transformer you could write to remove
 the children of an HTML node.
@@ -143,7 +177,8 @@ at compile-time. So, although I said that they have access to the template's
 arguments, it's really only the case if you write the transformer to ensure
 that is the case. This is done by making sure that any code that is given
 to a transformer as an argument is inserted into the Hiccup form as quoted
-code.
+code. All of the transformers built into Tinsel provide correct access to the
+template arguments.
 
 As an example, let's make a transformer to change the title of a page.
 
@@ -156,8 +191,9 @@ As an example, let's make a transformer to change the title of a page.
 		"<html><h1>The new title</h1></html>"
 
 By keeping the argument unevaluated, this guarantees that they will be
-evaluated in the context of the function that `deftemplate` builds. In the
-example above, a string was passed in, but the user could also pass in code:
+evaluated in the context of the function that `deftemplate` builds, which has
+the argument list provided to `deftemplate`. In the example above, a string
+was passed in, but the user could also pass in code:
 
 	user> (retitle-template (str "The " (+ 1 1) "nd title"))
 	"<html><h1>The 2nd title</h1></html>"
