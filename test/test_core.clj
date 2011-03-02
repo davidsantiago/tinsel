@@ -1,5 +1,5 @@
-(ns test-hew
-  (:use hew.core
+(ns test-tinsel
+  (:use tinsel.core
         clojure.test)
   ;; These two are just for testing, see test-ns-membership.
   (:require [clojure.string :as str]

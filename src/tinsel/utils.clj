@@ -1,4 +1,4 @@
-(ns hew.utils
+(ns tinsel.utils
   "Some utilities of use elsewhere."
   (:refer-clojure :exclude [name]))
 

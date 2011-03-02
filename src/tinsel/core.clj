@@ -1,7 +1,7 @@
-(ns hew.core
+(ns tinsel.core
   "Enlive-style templates with Hiccup."
   (:use [hiccup core])
-  (:require [hew.utils :as utils]
+  (:require [tinsel.utils :as utils]
             [pl.danieljanus.tagsoup :as ts]
             [clojure.zip :as zip]
             [clojure.walk :as walk]))

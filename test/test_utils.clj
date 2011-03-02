@@ -1,6 +1,6 @@
 (ns test-utils
   (:use clojure.test)
-  (:require [hew.utils :as utils]))
+  (:require [tinsel.utils :as utils]))
 
 ;; Test name.
 (deftest name-test

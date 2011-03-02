@@ -1,5 +1,5 @@
 (ns test-parse
-  (:use hew.core
+  (:use tinsel.core
         clojure.test)
   (:require [clojure.zip :as zip]))
 
