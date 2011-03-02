@@ -30,32 +30,30 @@ The results below are from
 [viewbenchmarks](http://github.com/davidsantiago/viewbenchmarks)
 
 	hiccup
-	"Elapsed time: 8.295 msecs"
-	"Elapsed time: 5.585 msecs"
-	"Elapsed time: 12.104 msecs"
+	"Elapsed time: 5.397 msecs"
+	"Elapsed time: 3.905 msecs"
+	"Elapsed time: 3.058 msecs"
 	hiccup (type-hint)
-	"Elapsed time: 5.612 msecs"
-	"Elapsed time: 5.122 msecs"
-	"Elapsed time: 3.392 msecs"
+	"Elapsed time: 4.597 msecs"
+	"Elapsed time: 3.244 msecs"
+	"Elapsed time: 2.862 msecs"
 	str
-	"Elapsed time: 4.911 msecs"
-	"Elapsed time: 3.124 msecs"
-	"Elapsed time: 3.571 msecs"
+	"Elapsed time: 4.152 msecs"
+	"Elapsed time: 4.177 msecs"
+	"Elapsed time: 2.837 msecs"
 	tinsel
-	"Elapsed time: 5.333 msecs"
-	"Elapsed time: 4.347 msecs"
-	"Elapsed time: 3.724 msecs"
+	"Elapsed time: 5.268 msecs"
+	"Elapsed time: 4.135 msecs"
+	"Elapsed time: 3.281 msecs"
 	tinsel (type-hint)
-	"Elapsed time: 4.546 msecs"
-	"Elapsed time: 4.192 msecs"
-	"Elapsed time: 3.262 msecs"
+	"Elapsed time: 4.526 msecs"
+	"Elapsed time: 3.454 msecs"
+	"Elapsed time: 5.824 msecs"
 
 As you can see, Tinsel still allows type-hinting just like Hiccup (really, it
-is passing on the type-hinted forms to Hiccup). I believe the initial slow run
-of the first test is due to JIT compilation; when the order of tests is
-changed around, the numbers still look the same (that is, whatever is first
-goes slowest). However, it is important to remember that templates can only go
-as fast as the code you ask them to evaluate at run-time.
+is passing on the type-hinted forms to Hiccup). However, it is important to
+remember that templates can only go as fast as the code you ask them to
+evaluate at run-time.
 
 The main new construct is the `deftemplate` macro. It takes the following
 arguments:
