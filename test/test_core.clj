@@ -74,6 +74,17 @@
   (is (= "<body><ul some-attr=\"someval\"><li>An item</li><li>Another item</li></ul></body>"
          (select-attr-present-template "Another item"))))
 
+;; Select by equality of attribute.
+(deftemplate select-attr-equal-template
+  [[:body [:ul {:some-attr "someval"} [:li "An item"]]]]
+  [added-li]
+  (attr= :some-attr "someval")
+  (append-content [:li added-li]))
+
+(deftest test-select-attr-equal-template
+  (is (= "<body><ul some-attr=\"someval\"><li>An item</li><li>Another item</li></ul></body>"
+         (select-attr-equal-template "Another item"))))
+
 ;; Select by id.
 (deftemplate select-id-template
   [[:body#short-id [:h1 {:id "long-id"} "A heading."]]]

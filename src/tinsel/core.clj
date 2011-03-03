@@ -30,6 +30,14 @@
     (contains? (utils/attrs (zip/node zip-loc))
                (keyword attr-name))))
 
+(defn attr=
+  "Returns a function that returns true if the node has the given attribute
+   with the given value."
+  [attr-name attr-value]
+  (fn [zip-loc]
+    (= ((keyword attr-name) (utils/attrs (zip/node zip-loc)))
+       attr-value)))
+
 (defn id=
   "Returns a function that returns true if the node has id equal to id."
   [id]
