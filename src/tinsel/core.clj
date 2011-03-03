@@ -22,6 +22,14 @@
     (= (utils/name tag)
        (utils/name (utils/tag (zip/node zip-loc))))))
 
+(defn has-attr?
+  "Returns a function that returns true if the node has the given attribute
+   (with any value). Argument can be string/keyword/symbol."
+  [attr-name]
+  (fn [zip-loc]
+    (contains? (utils/attrs (zip/node zip-loc))
+               (keyword attr-name))))
+
 (defn id=
   "Returns a function that returns true if the node has id equal to id."
   [id]

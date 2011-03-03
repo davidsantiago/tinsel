@@ -63,6 +63,17 @@
   (is (= "<body id=\"some-id\"><h1>HEADING</h1><h1>HEADING</h1></body>"
          (select-tag-template {:heading "HEADING"}))))
 
+;; Select by presence of attribute.
+(deftemplate select-attr-present-template
+  [[:body [:ul {:some-attr "someval"} [:li "An item"]]]]
+  [added-li]
+  (has-attr? :some-attr)
+  (append-content [:li added-li]))
+
+(deftest test-select-attr-present-template
+  (is (= "<body><ul some-attr=\"someval\"><li>An item</li><li>Another item</li></ul></body>"
+         (select-attr-present-template "Another item"))))
+
 ;; Select by id.
 (deftemplate select-id-template
   [[:body#short-id [:h1 {:id "long-id"} "A heading."]]]
