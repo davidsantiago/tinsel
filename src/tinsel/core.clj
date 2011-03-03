@@ -3,6 +3,7 @@
   (:use [hiccup core])
   (:require [tinsel.utils :as utils]
             [pl.danieljanus.tagsoup :as ts]
+            [clojure.string :as str]
             [clojure.zip :as zip]
             [clojure.walk :as walk]))
 
@@ -25,9 +26,17 @@
   "Returns a function that returns true if the node has id equal to id."
   [id]
   (fn [zip-loc]
-    (let [res (= (utils/name id)
-                 (utils/name (:id (second (zip/node zip-loc)))))]
-      res)))
+    (= (utils/name id)
+       (utils/name (:id (second (zip/node zip-loc)))))))
+
+(defn has-class
+  "Returns a function that returns true if the node has the given class."
+  [class]
+  (fn [zip-loc]
+    (let [class-str (:class (second (zip/node zip-loc)))
+          classes (if class-str
+                    (apply hash-set (str/split class-str #" ")))]
+      (contains? classes (utils/name class)))))
 
 ;;
 ;; Transformers
