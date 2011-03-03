@@ -29,7 +29,7 @@
     (= (utils/name id)
        (utils/name (:id (second (zip/node zip-loc)))))))
 
-(defn has-class
+(defn has-class?
   "Returns a function that returns true if the node has the given class."
   [class]
   (fn [zip-loc]

@@ -78,12 +78,9 @@
 (deftemplate select-class-template
   [[:body [:ul [:li.a] [:li.a.b] [:li.a.b.c]]]]
   [a b c]
-  (has-class :a)
-  (append-content a)
-  (has-class :b)
-  (append-content b)
-  (has-class :c)
-  (append-content c))
+  (has-class? :a) (append-content a)
+  (has-class? :b) (append-content b)
+  (has-class? :c) (append-content c))
 
 (deftest test-select-class-template
   (is (= "<body><ul><li class=\"a\">A</li><li class=\"a b\">AB</li><li class=\"a b c\">ABC</li></ul></body>"
