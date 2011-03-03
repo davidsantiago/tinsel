@@ -74,9 +74,3 @@
   "Given a normalized hiccup node, returns the content as a seq."
   [node]
   (rest (rest node)))
-
-(defn attr
-  "Given a normalized hiccup node, returns the value of the
-   attribute given or nil."
-  [node attr]
-  ((attrs node) attr))

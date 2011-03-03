@@ -56,3 +56,24 @@
          (utils/normalize-form [:html '(:msg arg-map)])))
   (is (= ["html" {:id nil :class nil} 'something]
          (utils/normalize-form [:html 'something]))))
+
+;;
+;; Do some testing of the selector/transformer utilities.
+;;
+
+(deftest tag-test
+  (is (= "html" (utils/tag (utils/normalize-form [:html])))))
+
+(deftest attrs-test
+  (is (= {:id nil :class nil}
+         (utils/attrs (utils/normalize-form [:html]))))
+  (is (= {:id "a" :class nil}
+         (utils/attrs (utils/normalize-form [:html#a])))))
+
+(deftest contents-test
+  (is (= '()
+         (utils/contents (utils/normalize-form [:html]))))
+  (is (= (seq ["Hi!"])
+         (utils/contents (utils/normalize-form [:html "Hi!"]))))
+  (is (= (seq ["Hi!"])
+         (utils/contents (utils/normalize-form [:html#a.a "Hi!"])))))
