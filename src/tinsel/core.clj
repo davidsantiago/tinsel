@@ -55,6 +55,31 @@
       (contains? classes (utils/name class)))))
 
 ;;
+;; Selector combinators
+;;
+
+(defn every-pred
+  "Takes any number of selectors and returns a selector that is true if
+   all of the argument selectors are true. This is a simpler version of
+   every-pred heading into Clojure 1.3; will probably remove it then. Note
+   that it can be simpler because we don't care about the argument unrolling
+   and it will only ever have exactly one arg."
+  [& selectors]
+  (fn [zip-loc]
+    (every? #(% zip-loc) selectors)))
+
+(defn some-fn
+  "Takes any number of selectors and returns a selector that is true if
+   any of the argument selectors are true. This is a simpler version of
+   some-fn heading into Clojure 1.3; will probably remove it then. Note
+   that it can be simpler because we don't care about the argument unrolling
+   and it will only ever have exactly one arg."
+  [& selectors]
+  (fn [zip-loc]
+    (some #(% zip-loc) selectors)))
+
+
+;;
 ;; Transformers
 ;;
 ;; Note: Transformers are functions of a node that return the new version of

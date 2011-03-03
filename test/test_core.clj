@@ -109,6 +109,26 @@
          (select-class-template "A" "B" "C"))))
 
 ;;
+;; Test Selector Combinators
+;;
+
+;; Test both every-pred and some-fn combinators.
+(deftemplate select-every-template
+  [[:body [:div.a] [:div.b] [:span.a] [:span.b]]]
+  [a b]
+  (every-pred (tag= :div)
+              (has-class? :a))
+  (append-content [:p (str "Div.a: " a)])
+  (some-fn (tag= :span)
+           (has-class? :b))
+  (append-content [:p (str "Span or .b: " b)]))
+
+(deftest test-select-every-template
+  (is (= "<body><div class=\"a\"><p>Div.a: A</p></div><div class=\"b\"><p>Span or .b: B</p></div><span class=\"a\"><p>Span or .b: B</p></span><span class=\"b\"><p>Span or .b: B</p></span></body>"
+         (select-every-template "A" "B"))))
+
+
+;;
 ;; Test Transformers
 ;;
 
