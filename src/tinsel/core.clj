@@ -20,20 +20,20 @@
   [tag]
   (fn [zip-loc]
     (= (utils/name tag)
-       (utils/name (first (zip/node zip-loc))))))
+       (utils/name (utils/tag (zip/node zip-loc))))))
 
 (defn id=
   "Returns a function that returns true if the node has id equal to id."
   [id]
   (fn [zip-loc]
     (= (utils/name id)
-       (utils/name (:id (second (zip/node zip-loc)))))))
+       (utils/name (:id (utils/attrs (zip/node zip-loc)))))))
 
 (defn has-class?
   "Returns a function that returns true if the node has the given class."
   [class]
   (fn [zip-loc]
-    (let [class-str (:class (second (zip/node zip-loc)))
+    (let [class-str (:class (utils/attrs (zip/node zip-loc)))
           classes (if class-str
                     (apply hash-set (str/split class-str #" ")))]
       (contains? classes (utils/name class)))))
@@ -54,8 +54,8 @@
                                  (utils/normalize-form new-content)
                                  new-content)]
     `(fn [node#]
-       (vector (first node#)
-               (second node#)
+       (vector (utils/tag node#)
+               (utils/attrs node#)
                (quote ~normalized-new-content)))))
 
 (defmacro append-content
@@ -73,16 +73,16 @@
                                  new-content)]
     `(fn [node#]
        (apply vector
-              (first node#)
-              (second node#)
+              (utils/tag node#)
+              (utils/attrs node#)
               (quote ~normalized-new-content)
-              (rest (rest node#))))))
+              (utils/contents node#)))))
 
 (defmacro set-attrs
   [attr-map]
   `(fn [node#]
-     (vector (first node#)
-             (merge (second node#)
+     (vector (utils/tag node#)
+             (merge (utils/attrs node#)
                     (quote ~attr-map)))))
 
 

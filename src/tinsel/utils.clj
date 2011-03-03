@@ -42,7 +42,7 @@
     (if (map? map-attrs)
       (apply vector tag (merge tag-attrs map-attrs) (next content))
       (apply vector tag tag-attrs content))))
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn normalize-form
   "Given a hiccup form (vector), recursively normalizes it using
@@ -55,3 +55,28 @@
                                     (normalize-form %)
                                     %)
                                  contents))))
+
+;;
+;; Selector/Transformer building blocks
+;;
+
+(defn tag
+  "Given a normalized hiccup node, returns the tag as a string."
+  [node]
+  (first node))
+
+(defn attrs
+  "Given a normalized hiccup node, returns the attribute map."
+  [node]
+  (second node))
+
+(defn contents
+  "Given a normalized hiccup node, returns the content as a seq."
+  [node]
+  (rest (rest node)))
+
+(defn attr
+  "Given a normalized hiccup node, returns the value of the
+   attribute given or nil."
+  [node attr]
+  ((attrs node) attr))
