@@ -100,13 +100,13 @@
                  (rest selectors))
           nil))))) ;; Didn't match, so we short circuit and return nil.
 
-(defn some-ancestor
+(defn or-ancestor
   "Takes a selector as argument and returns a selector that will match any
-   node for which some ancestor node in the tree matches the argument
-   selector. Returns the loc of the matching ancestor node."
+   node for which either that node or some ancestor node in the tree matches
+   the argument selector. Returns the loc of the matching ancestor node."
   [selector]
   (fn [zip-loc]
-    (loop [curr-loc zip-loc] 
+    (loop [curr-loc zip-loc]
       (let [next-loc (selector curr-loc)] ;; Check if selector matches here.
         (if next-loc
           next-loc ;; Matched, return matching node.
