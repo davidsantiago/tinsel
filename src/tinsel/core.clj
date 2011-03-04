@@ -70,23 +70,17 @@
 ;; Selector combinators
 ;;
 
-(defn every-pred
+(defn every-selector
   "Takes any number of selectors and returns a selector that is true if
-   all of the argument selectors are true. This is a simpler version of
-   every-pred heading into Clojure 1.3; will probably remove it then. Note
-   that it can be simpler because we don't care about the argument unrolling
-   and it will only ever have exactly one arg."
+   all of the argument selectors are true."
   [& selectors]
   (fn [zip-loc]
     (if (every? #(% zip-loc) selectors)
       zip-loc)))
 
-(defn some-fn
+(defn some-selector
   "Takes any number of selectors and returns a selector that is true if
-   any of the argument selectors are true. This is a simpler version of
-   some-fn heading into Clojure 1.3; will probably remove it then. Note
-   that it can be simpler because we don't care about the argument unrolling
-   and it will only ever have exactly one arg."
+   any of the argument selectors are true."
   [& selectors]
   (fn [zip-loc]
     (if (some #(% zip-loc) selectors)
