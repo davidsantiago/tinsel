@@ -108,6 +108,28 @@
   (is (= "<body><ul><li class=\"a\">A</li><li class=\"a b\">AB</li><li class=\"a b c\">ABC</li></ul></body>"
          (select-class-template "A" "B" "C"))))
 
+;; Select by nth child.
+(deftemplate select-nth-child-template
+  [[:body [:ul [:li] [:li] [:li#here] [:li]]]]
+  [third-list-item]
+  (nth-child? 3)
+  (set-content third-list-item))
+
+(deftest test-select-nth-child-template
+  (is (= "<body><ul><li></li><li></li><li id=\"here\">HERE</li><li></li></ul></body>"
+         (select-nth-child-template "HERE"))))
+
+;; Select by nth last child.
+(deftemplate select-nth-last-child-template
+  [[:body [:ul [:li] [:li] [:li#here] [:li]]]]
+  [third-list-item]
+  (nth-last-child? 2)
+  (set-content third-list-item))
+
+(deftest test-select-nth-last-child-template
+  (is (= "<body><ul><li></li><li></li><li id=\"here\">HERE</li><li></li></ul></body>"
+         (select-nth-last-child-template "HERE"))))
+
 ;;
 ;; Test Selector Combinators
 ;;
