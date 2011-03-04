@@ -100,6 +100,19 @@
                  (rest selectors))
           nil))))) ;; Didn't match, so we short circuit and return nil.
 
+(defn some-ancestor
+  "Takes a selector as argument and returns a selector that will match any
+   node for which some ancestor node in the tree matches the argument
+   selector. Returns the loc of the matching ancestor node."
+  [selector]
+  (fn [zip-loc]
+    (loop [curr-loc zip-loc] 
+      (let [next-loc (selector curr-loc)] ;; Check if selector matches here.
+        (if next-loc
+          next-loc ;; Matched, return matching node.
+          ;; Didn't match, so recur iff the parent node exists.
+          (if-let [parent-loc (zip/up curr-loc)]
+            (recur parent-loc)))))))
 
 
 

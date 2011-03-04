@@ -143,6 +143,20 @@
   (is (= "<body><div class=\"a\"><div class=\"b\"><span class=\"c\"><span class=\"d\">Wow, found it!</span></span><span id=\"fakeout\"><span class=\"d\"></span></span></div></div></body>"
          (select-path-template "Wow, found it!"))))
 
+;; Test some-ancestor combinator.
+(deftemplate select-some-ancestor-template
+  [[:body [:div.a [:div.b [:span.c [:span.d "Bullseye"]]
+                          [:span#fakeout [:span.d]]]]]]
+  [new-content]
+  (select (some-ancestor (tag= :div))
+          (some-ancestor (has-class? :c))
+          (has-class? :d))
+  (set-content new-content))
+
+(deftest test-select-some-ancestor-template
+  (is (= "<body><div class=\"a\"><div class=\"b\"><span class=\"c\"><span class=\"d\">Wow, found it!</span></span><span id=\"fakeout\"><span class=\"d\"></span></span></div></div></body>"
+         (select-some-ancestor-template "Wow, found it!"))))
+
 
 ;;
 ;; Test Transformers
