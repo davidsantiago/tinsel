@@ -115,9 +115,18 @@
   (nth-child? 3)
   (set-content third-list-item))
 
-(deftest test-select-nth-child-template
-  (is (= "<body><ul><li></li><li></li><li id=\"here\">HERE</li><li></li></ul></body>"
-         (select-nth-child-template "HERE"))))
+(comment
+  (deftemplate select-1st-child-template
+    [[:body [:ul [:li] [:li]]]] ;; Want to ensure root isn't selected.
+    [added-attrs]
+    (nth-child? 1)
+    (set-attrs added-attrs))
+
+  (deftest test-select-nth-child-template
+    (is (= "<body><ul><li></li><li></li><li id=\"here\">HERE</li><li></li></ul></body>"
+           (select-nth-child-template "HERE")))
+    (is (= "<body><ul first-child=\"true\"><li first-child=\"true\"></li><li></li></ul></body>"
+           (select-1st-child-template {:first-child "true"})))))
 
 ;; Select by nth last child.
 (deftemplate select-nth-last-child-template
@@ -285,11 +294,27 @@
   (tag= :img)
   (set-attrs {:src arg-url}))
 
+(deftemplate set-attribute-template3
+  [[:body [:a "Some link text"]]]
+  [arg-url]
+  (tag= :a)
+  (set-attrs {:href arg-url}))
+
+(deftemplate set-attribute-template4  ;; Testing map arg in a symbol...
+  [[:body [:img]]]
+  [arg-map]
+  (tag= :img)
+  (set-attrs arg-map))
+
 (deftest test-set-attribute-template
   (is (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
-         (set-attribute-template1 {:url "http://example.com/img.jpg"}))
-      (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
-         (set-attribute-template2 "http://example.com/img.jpg"))))
+         (set-attribute-template1 {:url "http://example.com/img.jpg"})))
+  (is (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
+         (set-attribute-template2 "http://example.com/img.jpg")))
+  (is (= "<body><a href=\"http://fark.com\">Some link text</a></body>"
+         (set-attribute-template3 "http://fark.com")))
+  (is (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
+         (set-attribute-template4 {:src "http://example.com/img.jpg"}))))
 
 ;; A slightly larger template, check output quality against hiccup.
 (deftemplate medium-template

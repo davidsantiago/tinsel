@@ -68,7 +68,7 @@
 
 (defn nth-child?
   "Returns a function that returns true if the node is the nth child of
-   its parent."
+   its parent (and it has a parent)."
   [n]
   (fn [zip-loc]
     ;; Note we add 1 to n; because vectors have first two elements as
@@ -76,19 +76,21 @@
     (let [movements (repeat (+ n 1) zip/right) ;; Apply move-right-n to move
           move-right-n (apply comp movements)  ;; right n times.
           nth-child (move-right-n (zip/leftmost zip-loc))]
-      (if (= zip-loc nth-child)
+      (if (and (= zip-loc nth-child)
+               (zip/up zip-loc)) ;; Check for parent.
         zip-loc))))
 
 (defn nth-last-child?
   "Returns a function that returns true if the node is the nth last child
-   of its parent."
+   of its parent (and it has a parent)."
   [n]
   (fn [zip-loc]
     ;; The left has no padding elements, so we just subtract 1 as expected.
     (let [movements (repeat (- n 1) zip/left) ;; Apply move-left-n to move
           move-left-n (apply comp movements)  ;; left n times.
           nth-last-child (move-left-n (zip/rightmost zip-loc))]
-      (if (= zip-loc nth-last-child)
+      (if (and (= zip-loc nth-last-child)
+               (zip/up zip-loc)) ;; Check for parent.
         zip-loc))))
 
 ;;
@@ -187,9 +189,11 @@
 (defmacro set-attrs
   [attr-map]
   `(fn [node#]
-     (vector (utils/tag node#)
-             (merge (utils/attrs node#)
-                    (quote ~attr-map)))))
+     (apply vector
+            (utils/tag node#)
+            `(merge (utils/attrs ~node#)
+                    ~'~attr-map)
+            (utils/contents node#))))
 
 
 ;;
