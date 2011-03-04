@@ -10,8 +10,15 @@
 ;;
 ;; Selectors
 ;;
-;; Note: Selectors are functions of a zipper location that return true if that
-;; hiccup node is the one of interest. They do not execute in the environment
+;; Note: Selectors are functions of a zipper location that return a zipper
+;; location if a node satisfies their requirements, or nil if it does not.
+;; In general, the location returned should be "the location that satisfied
+;; the requirement," although what exactly that means is specific to the
+;; selector. Probably most selectors should return the same location passed
+;; in, though. Exceptions would be selectors for properties of ancestors,
+;; siblings, etc.
+
+;; They do not execute in the environment
 ;; of the template; that is, your template arguments are not available. Thus,
 ;; selections must be based entirely on properties of the template itself.
 
@@ -19,31 +26,35 @@
   "Returns a function that returns true if the node has tag equal to arg."
   [tag]
   (fn [zip-loc]
-    (= (utils/name tag)
-       (utils/name (utils/tag (zip/node zip-loc))))))
+    (if (= (utils/name tag)
+           (utils/name (utils/tag (zip/node zip-loc))))
+      zip-loc)))
 
 (defn has-attr?
   "Returns a function that returns true if the node has the given attribute
    (with any value). Argument can be string/keyword/symbol."
   [attr-name]
   (fn [zip-loc]
-    (contains? (utils/attrs (zip/node zip-loc))
-               (keyword attr-name))))
+    (if (contains? (utils/attrs (zip/node zip-loc))
+                   (keyword attr-name))
+      zip-loc)))
 
 (defn attr=
   "Returns a function that returns true if the node has the given attribute
    with the given value."
   [attr-name attr-value]
   (fn [zip-loc]
-    (= ((keyword attr-name) (utils/attrs (zip/node zip-loc)))
-       attr-value)))
+    (if (= ((keyword attr-name) (utils/attrs (zip/node zip-loc)))
+           attr-value)
+      zip-loc)))
 
 (defn id=
   "Returns a function that returns true if the node has id equal to id."
   [id]
   (fn [zip-loc]
-    (= (utils/name id)
-       (utils/name (:id (utils/attrs (zip/node zip-loc)))))))
+    (if (= (utils/name id)
+           (utils/name (:id (utils/attrs (zip/node zip-loc)))))
+      zip-loc)))
 
 (defn has-class?
   "Returns a function that returns true if the node has the given class."
@@ -52,7 +63,8 @@
     (let [class-str (:class (utils/attrs (zip/node zip-loc)))
           classes (if class-str
                     (apply hash-set (str/split class-str #" ")))]
-      (contains? classes (utils/name class)))))
+      (if (contains? classes (utils/name class))
+        zip-loc))))
 
 ;;
 ;; Selector combinators
@@ -66,7 +78,8 @@
    and it will only ever have exactly one arg."
   [& selectors]
   (fn [zip-loc]
-    (every? #(% zip-loc) selectors)))
+    (if (every? #(% zip-loc) selectors)
+      zip-loc)))
 
 (defn some-fn
   "Takes any number of selectors and returns a selector that is true if
@@ -76,7 +89,8 @@
    and it will only ever have exactly one arg."
   [& selectors]
   (fn [zip-loc]
-    (some #(% zip-loc) selectors)))
+    (if (some #(% zip-loc) selectors)
+      zip-loc)))
 
 
 ;;
