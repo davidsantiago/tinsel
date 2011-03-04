@@ -128,6 +128,20 @@
          (select-every-template "A" "B"))))
 
 ;; Test select combinator.
+(deftemplate select-path-template
+  [[:body [:div.a [:div.b [:span.c [:span.d "Bullseye"]]
+                          [:span#fakeout [:span.d]]]]]]
+  [new-content]
+  (select (has-class? :a)
+          (has-class? :b)
+          (every-selector (has-class? :c)
+                          (tag= :span))
+          (has-class? :d))
+  (set-content new-content))
+
+(deftest test-select-path-template
+  (is (= "<body><div class=\"a\"><div class=\"b\"><span class=\"c\"><span class=\"d\">Wow, found it!</span></span><span id=\"fakeout\"><span class=\"d\"></span></span></div></div></body>"
+         (select-path-template "Wow, found it!"))))
 
 
 ;;

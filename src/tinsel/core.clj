@@ -86,6 +86,23 @@
     (if (some #(% zip-loc) selectors)
       zip-loc)))
 
+(defn select
+  "Takes any number of selectors as arguments and selects nodes that match
+   the path down the tree specified. Returns the loc of the matched node."
+  [& selectors]
+  (fn [zip-loc]
+    (loop [curr-loc zip-loc
+           selectors (reverse selectors)] ;; Start at end and work back up tree.
+      (if (empty? selectors)
+        zip-loc ;; Got this far satisfying selectors, return the selected node.
+        (if-let [next-loc ((first selectors) curr-loc)]
+          (recur (zip/up next-loc)
+                 (rest selectors))
+          nil))))) ;; Didn't match, so we short circuit and return nil.
+
+
+
+
 
 ;;
 ;; Transformers
