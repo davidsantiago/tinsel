@@ -2,6 +2,7 @@
   "Enlive-style templates with Hiccup."
   (:use [hiccup core])
   (:require [tinsel.utils :as utils]
+            [tinsel.zip :as tzip]
             [pl.danieljanus.tagsoup :as ts]
             [clojure.string :as str]
             [clojure.zip :as zip]
@@ -207,7 +208,7 @@
    it where the selector dictates to the form given."
   [[select? transform] form]
   ;; Iterate through all the nodes in depth-first order, replacing any applicable.
-  (loop [loc (zip/vector-zip form)]
+  (loop [loc (tzip/hiccup-zip form)]
     ;; If this node is selected by the selector, transform it.
     (if (zip/end? loc)
       (zip/root loc)

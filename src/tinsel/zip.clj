@@ -25,7 +25,7 @@
    and returns a new node that has the the children argument as its children."
   [node children]
   (if (map? (second node))                ;; Again, check for normalized vec.
-    (conj (subvec node 0 2) children)     ;; Attach children after tag&attrs.
+    (into (subvec node 0 2) children)     ;; Attach children after tag&attrs.
     (apply vector (first node) children)));; Otherwise, attach after tag.
 
 (defn hiccup-zip

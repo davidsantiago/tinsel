@@ -44,3 +44,10 @@
   (is (= [:body [:ul [:p "Hi"] [:li]]]
            (-> unnormalized-small-zip zip/down zip/down
                (zip/edit (fn [_] [:p "Hi"])) zip/root))))
+
+(deftest test-basic-edit-normalized
+  (is (= ["body" {:id nil :class nil}
+          ["ul" {:id nil :class nil}
+           ["p" "Hi"] ["li" {:id nil :class nil}]]]
+           (-> normalized-small-zip zip/down zip/down
+               (zip/edit (fn [_] ["p" "Hi"])) zip/root))))
