@@ -115,18 +115,17 @@
   (nth-child? 3)
   (set-content third-list-item))
 
-(comment
-  (deftemplate select-1st-child-template
-    [[:body [:ul [:li] [:li]]]] ;; Want to ensure root isn't selected.
-    [added-attrs]
-    (nth-child? 1)
-    (set-attrs added-attrs))
+(deftemplate select-1st-child-template
+  [[:body [:ul [:li] [:li]]]] ;; Want to ensure root isn't selected.
+  [added-attrs]
+  (nth-child? 1)
+  (set-attrs added-attrs))
 
-  (deftest test-select-nth-child-template
-    (is (= "<body><ul><li></li><li></li><li id=\"here\">HERE</li><li></li></ul></body>"
-           (select-nth-child-template "HERE")))
-    (is (= "<body><ul first-child=\"true\"><li first-child=\"true\"></li><li></li></ul></body>"
-           (select-1st-child-template {:first-child "true"})))))
+(deftest test-select-nth-child-template
+  (is (= "<body><ul><li></li><li></li><li id=\"here\">HERE</li><li></li></ul></body>"
+         (select-nth-child-template "HERE")))
+  (is (= "<body><ul first-child=\"true\"><li first-child=\"true\"></li><li></li></ul></body>"
+         (select-1st-child-template {:first-child "true"}))))
 
 ;; Select by nth last child.
 (deftemplate select-nth-last-child-template

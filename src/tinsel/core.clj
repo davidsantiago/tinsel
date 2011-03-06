@@ -69,14 +69,15 @@
 
 (defn nth-child?
   "Returns a function that returns true if the node is the nth child of
-   its parent (and it has a parent)."
+   its parent (and it has a parent). First element is 1, last is n."
   [n]
   (fn [zip-loc]
-    ;; Note we add 1 to n; because vectors have first two elements as
-    ;; tag and attrs, so we need to add 2 rights to skip those.
-    (let [movements (repeat (+ n 1) zip/right) ;; Apply move-right-n to move
-          move-right-n (apply comp movements)  ;; right n times.
-          nth-child (move-right-n (zip/leftmost zip-loc))]
+    ;; We create move-to-nth to be a single function to move right n times.
+    ;; Because we have to subtract 1 from n, we might have movements = '().
+    ;; Obviously, comp won't like that, so we make the first arg be identity.
+    (let [movements (repeat (- n 1) zip/right)
+          move-to-nth (apply comp identity movements)
+          nth-child (move-to-nth (zip/leftmost zip-loc))]
       (if (and (= zip-loc nth-child)
                (zip/up zip-loc)) ;; Check for parent.
         zip-loc))))
