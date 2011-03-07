@@ -24,39 +24,6 @@ if and only if that node should have the corresponding transformer applied.
 A transformer is another function that takes a node and returns a new node
 that should be inserted in its place before final rendering.
 
-In my testing, Tinsel renders templates exactly as fast as the equivalent
-Hiccup code, which is itself just a tad slower than raw string concatenation.
-The results below are from 
-[viewbenchmarks](http://github.com/davidsantiago/viewbenchmarks)
-
-	hiccup
-	"Elapsed time: 8.295 msecs"
-	"Elapsed time: 5.585 msecs"
-	"Elapsed time: 12.104 msecs"
-	hiccup (type-hint)
-	"Elapsed time: 5.612 msecs"
-	"Elapsed time: 5.122 msecs"
-	"Elapsed time: 3.392 msecs"
-	str
-	"Elapsed time: 4.911 msecs"
-	"Elapsed time: 3.124 msecs"
-	"Elapsed time: 3.571 msecs"
-	tinsel
-	"Elapsed time: 5.333 msecs"
-	"Elapsed time: 4.347 msecs"
-	"Elapsed time: 3.724 msecs"
-	tinsel (type-hint)
-	"Elapsed time: 4.546 msecs"
-	"Elapsed time: 4.192 msecs"
-	"Elapsed time: 3.262 msecs"
-
-As you can see, Tinsel still allows type-hinting just like Hiccup (really, it
-is passing on the type-hinted forms to Hiccup). I believe the initial slow run
-of the first test is due to JIT compilation; when the order of tests is
-changed around, the numbers still look the same (that is, whatever is first
-goes slowest). However, it is important to remember that templates can only go
-as fast as the code you ask them to evaluate at run-time.
-
 The main new construct is the `deftemplate` macro. It takes the following
 arguments:
 
@@ -101,6 +68,49 @@ some code to generate the string to set the content to. Note that the
 user-name argument is visible to the transformer. Note also that set-content
 left the tag and attributes unchanged.
 
+Templates can take any number of selector/transformer pairs, generating as
+many changes to the document tree as you like. As a slightly longer example,
+look at the template below: 
+
+	(deftemplate medium-template
+	  [[:html
+	    [:head
+	     [:title "Literal String"]]
+	    [:body
+	     [:div.example]
+	     [:ul.times-table]]]]
+	  [text]
+	  (select (or-ancestor (tag= :head))
+	          (tag= :title))
+	  (set-content "Times Table for 9")
+	  (has-class? :example) (set-content text)
+	  (has-class? :times-table)
+	  (set-content (for [n (range 1 13)]
+	                 [:li n " * 9 = " (* n 9)])))
+
+Which outputs
+
+	user> (medium-template "9 x 9 = 81")
+	"<html><head><title>Times Table for 9</title></head><body><div class=\"example\">9 x 9 = 81</div><ul class=\"times-table\"><li>1 * 9 = 9</li><li>2 * 9 = 18</li><li>3 * 9 = 27</li><li>4 * 9 = 36</li><li>5 * 9 = 45</li><li>6 * 9 = 54</li><li>7 * 9 = 63</li><li>8 * 9 = 72</li><li>9 * 9 = 81</li><li>10 * 9 = 90</li><li>11 * 9 = 99</li><li>12 * 9 = 108</li></ul></body></html>"
+
+Now, once your templates start to get this big, you should probably stick them
+in their own files and load them with functions like `html-file` or define
+a var to hold their content. 
+
+Here you can see we used three selector/transformer pairs to make the template
+turn into the output we wanted. The first selector is
+
+	(select (or-ancestor (tag= :head))
+	        (tag= :title))
+
+This makes use of the `select` combinator. `select` takes any number of other
+combinators and combines their output in a search down the document tree. In
+this case, it will select a `title` node that has some ancestor that is a
+`head` tag. We use this selector to change the title of the page. 
+
+The next two selectors use `has-class?` to select nodes by class and set their
+content. The final rendered page reflects all the changes.
+
 Selectors and Transformers
 --------------------------
 
@@ -114,31 +124,32 @@ ahead.
 ###Selectors###
 
 A selector is a function of a **a zipper of a Hiccup vector** that returns
-true on any node it has selected. In the code above, we used `(id= :id)` as a
-selector. `id=` is actually a function that returns another function, and its
-return value is the function that is actually used as a selector. `id=` is
-present simply for convenience. 
+a zipper loc for any node it has selected. In the code above, we used
+`(id= :id)` as a selector. `id=` is actually a function that returns another
+function, and its return value is the function that is actually used as a
+selector. `id=` is present simply for convenience. 
 
-Another function in Tinsel is the similar `tag=` selector, which returns true
-on any HTML nodes with the given tag. One simplistic implementation for `tag=`
-could be
+Another function in Tinsel is the similar `tag=` selector, which returns the
+loc of any HTML nodes with the given tag. One simplistic implementation for
+`tag=` could be
 
 	(require ['clojure.zip :as 'zip])
 	
 	(defn tag=
 		[tag]
 		(fn [zip-loc]
-			(= tag (first (zip/node zip-loc)))))
+			(if (= tag (first (zip/node zip-loc)))
+				zip-loc)))
 
 So `tag=` is a function that returns functions adapted to its argument, in
 this case the tag of interest. It returns a function that takes a zipper
-location and returns true if the first element of the node at the given
+location and returns it if the first element of the node at the given
 location is equal to the argument `tag`. The raw `zip-loc` argument is
 difficult to interpret, so we need to use `zip/node` to get the Hiccup form it
 points to. A Hiccup form consists of a vector where the first element is the
 tag as a string, the second element is a map of attributes, and any subsequent
 elements are sub-nodes. So if the `tag` argument matches the first element,
-that node should be selected, and true is returned.
+that node should be selected, and its zipper loc is returned.
 
 Why require selectors to take zippers instead of nodes? That would be easier
 but it would make it impossible to write selectors based on the node's
@@ -148,6 +159,42 @@ Also note that selectors **don't have access to the template arguments**.
 This is because selectors are run at compile-time and not at run-time, so they
 do not have access to the values of the template arguments. I believe this
 restriction is relatively minor, though.
+
+Currently available selectors include
+
+* `tag=` - Selects nodes with the given tag.
+* `has-attr?` - Selects nodes that have the given attribute (any value).
+* `attr=` - Selects nodes that have the given attribute with the given value.
+* `id=` - Selects nodes that have the given ID.
+* `has-class?` - Selects nodes that have the given class (can also have
+others).
+* `nth-child?` - Selects nodes that are the nth-child of their parent (and
+have a parent).
+* `nth-last-child?` - Selects nodes that are the nth-last-child of their
+parent (and have a parent).
+
+####Selector Combinators####
+
+There's no reason that a selector can't take another selector as an argument,
+returning a compound selector with more complex behavior. In fact, Tinsel has
+several selector combinators built in, which allow you to accomplish several
+types of advanced behavior. 
+
+* `every-selector` - This combinator takes any number of selector expressions
+as argument and returns a new selector that selects nodes that satisfy every
+selector passed as an argument. You can think of it as an "and" selector.
+* `some-selector` - Similar to `every-selector`, but selects nodes that
+satisfy at least one of the argument selectors. You can think of it as an
+"or" selector.
+* `select` - This selector lets you search for selectors that satisfy
+compound hierarchical relationships. It takes any number of selectors, and
+selects nodes which have parent nodes that all satisfy the selectors on the
+path from parent to child. See the medium example above. Note that by default,
+the path specifies a direct parent/child relationship, but you can change
+this with `or-ancestor`.
+* `or-ancestor` - This selector takes a selector as argument, and returns a
+selector that will select nodes for which the selector is satisfied either by
+themselves or an ancestor node.
 
 ###Transformers###
 
@@ -202,6 +249,60 @@ So ultimately transformers can also be tricky to write. I am working to make
 sure that Tinsel has a good number of transformers that will hopefully span
 just about any use cases I can find, but again, if you need to write your own,
 you can go ahead and do so.
+
+Currently available transformers include
+
+* `set-content` - Replaces the node's content with the results of the
+argument.
+* `append-content` - Adds the results of the argument after the node's current
+content.
+* `prepend-content` - Adds the results of the argument before the node's
+current content.
+* `set-attrs` - Adds the map argument to the node's attributes, overwriting
+any that are already present.
+
+Performance
+-----------
+In my testing, Tinsel renders templates exactly as fast as the equivalent
+Hiccup code, which is itself just a tad slower than raw string concatenation.
+The results below are from 
+[viewbenchmarks](http://github.com/davidsantiago/viewbenchmarks)
+
+	hiccup
+	"Elapsed time: 7.126 msecs"
+	"Elapsed time: 13.655 msecs"
+	"Elapsed time: 5.012 msecs"
+	hiccup (type-hint)
+	"Elapsed time: 8.084 msecs"
+	"Elapsed time: 6.157 msecs"
+	"Elapsed time: 3.573 msecs"
+	str
+	"Elapsed time: 5.61 msecs"
+	"Elapsed time: 4.928 msecs"
+	"Elapsed time: 2.902 msecs"
+	tinsel
+	"Elapsed time: 5.358 msecs"
+	"Elapsed time: 4.577 msecs"
+	"Elapsed time: 3.094 msecs"
+	tinsel (type-hint)
+	"Elapsed time: 5.062 msecs"
+	"Elapsed time: 3.646 msecs"
+	"Elapsed time: 2.989 msecs"
+
+As you can see, Tinsel still allows type-hinting just like Hiccup (really, it
+is passing on the type-hinted forms to Hiccup). However, it is important to
+remember that templates can only go as fast as the code you ask them to
+evaluate at run-time.
+
+Obtaining it
+------------
+
+You can add
+
+	[tinsel "0.3.0"]
+
+to cake's project.clj and run `cake deps`. Similar steps should work on
+Leiningen too.
 
 Bugs and Missing Features
 -------------------------

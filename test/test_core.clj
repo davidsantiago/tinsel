@@ -63,6 +63,28 @@
   (is (= "<body id=\"some-id\"><h1>HEADING</h1><h1>HEADING</h1></body>"
          (select-tag-template {:heading "HEADING"}))))
 
+;; Select by presence of attribute.
+(deftemplate select-attr-present-template
+  [[:body [:ul {:some-attr "someval"} [:li "An item"]]]]
+  [added-li]
+  (has-attr? :some-attr)
+  (append-content [:li added-li]))
+
+(deftest test-select-attr-present-template
+  (is (= "<body><ul some-attr=\"someval\"><li>An item</li><li>Another item</li></ul></body>"
+         (select-attr-present-template "Another item"))))
+
+;; Select by equality of attribute.
+(deftemplate select-attr-equal-template
+  [[:body [:ul {:some-attr "someval"} [:li "An item"]]]]
+  [added-li]
+  (attr= :some-attr "someval")
+  (append-content [:li added-li]))
+
+(deftest test-select-attr-equal-template
+  (is (= "<body><ul some-attr=\"someval\"><li>An item</li><li>Another item</li></ul></body>"
+         (select-attr-equal-template "Another item"))))
+
 ;; Select by id.
 (deftemplate select-id-template
   [[:body#short-id [:h1 {:id "long-id"} "A heading."]]]
@@ -73,6 +95,105 @@
 (deftest test-select-id-template
   (is (= "<body id=\"short-id\"><h1 id=\"long-id\">Some cool heading.</h1></body>"
          (select-id-template {:heading "Some cool heading."}))))
+
+;; Select by class.
+(deftemplate select-class-template
+  [[:body [:ul [:li.a] [:li.a.b] [:li.a.b.c]]]]
+  [a b c]
+  (has-class? :a) (append-content a)
+  (has-class? :b) (append-content b)
+  (has-class? :c) (append-content c))
+
+(deftest test-select-class-template
+  (is (= "<body><ul><li class=\"a\">A</li><li class=\"a b\">AB</li><li class=\"a b c\">ABC</li></ul></body>"
+         (select-class-template "A" "B" "C"))))
+
+;; Select by nth child.
+(deftemplate select-nth-child-template
+  [[:body [:ul [:li] [:li] [:li#here] [:li]]]]
+  [third-list-item]
+  (nth-child? 3)
+  (set-content third-list-item))
+
+(deftemplate select-1st-child-template
+  [[:body [:ul [:li] [:li]]]] ;; Want to ensure root isn't selected.
+  [added-attrs]
+  (nth-child? 1)
+  (set-attrs added-attrs))
+
+(deftest test-select-nth-child-template
+  (is (= "<body><ul><li></li><li></li><li id=\"here\">HERE</li><li></li></ul></body>"
+         (select-nth-child-template "HERE")))
+  (is (= "<body><ul first-child=\"true\"><li first-child=\"true\"></li><li></li></ul></body>"
+         (select-1st-child-template {:first-child "true"}))))
+
+;; Select by nth last child.
+(deftemplate select-nth-last-child-template
+  [[:body [:ul [:li] [:li] [:li#here] [:li]]]]
+  [third-list-item]
+  (nth-last-child? 2)
+  (set-content third-list-item))
+
+(deftemplate select-last-child-template
+  [[:body [:ul [:li] [:li]]]] ;; Want to ensure root isn't selected.
+  [added-attrs]
+  (nth-last-child? 1)
+  (set-attrs added-attrs))
+
+(deftest test-select-nth-last-child-template
+  (is (= "<body><ul><li></li><li></li><li id=\"here\">HERE</li><li></li></ul></body>"
+         (select-nth-last-child-template "HERE")))
+  (is (= "<body><ul last-child=\"true\"><li></li><li last-child=\"true\"></li></ul></body>"
+         (select-last-child-template {:last-child "true"}))))
+
+;;
+;; Test Selector Combinators
+;;
+
+;; Test both every-pred and some-fn combinators.
+(deftemplate select-every-template
+  [[:body [:div.a] [:div.b] [:span.a] [:span.b]]]
+  [a b]
+  (every-selector (tag= :div)
+                  (has-class? :a))
+  (append-content [:p (str "Div.a: " a)])
+  (some-selector (tag= :span)
+                 (has-class? :b))
+  (append-content [:p (str "Span or .b: " b)]))
+
+(deftest test-select-every-template
+  (is (= "<body><div class=\"a\"><p>Div.a: A</p></div><div class=\"b\"><p>Span or .b: B</p></div><span class=\"a\"><p>Span or .b: B</p></span><span class=\"b\"><p>Span or .b: B</p></span></body>"
+         (select-every-template "A" "B"))))
+
+;; Test select combinator.
+(deftemplate select-path-template
+  [[:body [:div.a [:div.b [:span.c [:span.d "Bullseye"]]
+                          [:span#fakeout [:span.d]]]]]]
+  [new-content]
+  (select (has-class? :a)
+          (has-class? :b)
+          (every-selector (has-class? :c)
+                          (tag= :span))
+          (has-class? :d))
+  (set-content new-content))
+
+(deftest test-select-path-template
+  (is (= "<body><div class=\"a\"><div class=\"b\"><span class=\"c\"><span class=\"d\">Wow, found it!</span></span><span id=\"fakeout\"><span class=\"d\"></span></span></div></div></body>"
+         (select-path-template "Wow, found it!"))))
+
+;; Test or-ancestor combinator.
+(deftemplate select-or-ancestor-template
+  [[:body [:div.a [:div.b [:span.c [:span.d "Bullseye"]]
+                          [:span#fakeout [:span.d]]]]]]
+  [new-content]
+  (select (or-ancestor (tag= :div))
+          (or-ancestor (has-class? :c))
+          (has-class? :d))
+  (set-content new-content))
+
+(deftest test-select-or-ancestor-template
+  (is (= "<body><div class=\"a\"><div class=\"b\"><span class=\"c\"><span class=\"d\">Wow, found it!</span></span><span id=\"fakeout\"><span class=\"d\"></span></span></div></div></body>"
+         (select-or-ancestor-template "Wow, found it!"))))
 
 
 ;;
@@ -180,11 +301,27 @@
   (tag= :img)
   (set-attrs {:src arg-url}))
 
+(deftemplate set-attribute-template3
+  [[:body [:a "Some link text"]]]
+  [arg-url]
+  (tag= :a)
+  (set-attrs {:href arg-url}))
+
+(deftemplate set-attribute-template4  ;; Testing map arg in a symbol...
+  [[:body [:img]]]
+  [arg-map]
+  (tag= :img)
+  (set-attrs arg-map))
+
 (deftest test-set-attribute-template
   (is (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
-         (set-attribute-template1 {:url "http://example.com/img.jpg"}))
-      (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
-         (set-attribute-template2 "http://example.com/img.jpg"))))
+         (set-attribute-template1 {:url "http://example.com/img.jpg"})))
+  (is (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
+         (set-attribute-template2 "http://example.com/img.jpg")))
+  (is (= "<body><a href=\"http://fark.com\">Some link text</a></body>"
+         (set-attribute-template3 "http://fark.com")))
+  (is (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
+         (set-attribute-template4 {:src "http://example.com/img.jpg"}))))
 
 ;; A slightly larger template, check output quality against hiccup.
 (deftemplate medium-template
