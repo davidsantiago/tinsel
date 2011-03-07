@@ -87,20 +87,16 @@
    clojure.zip/next otherwise. Note that unlike with a pre-order walk, the root
    is NOT the first element in the walk order, so be sure to take that into
    account in your algorithm if it matters (ie, call postorder-first first
-   thing before processing a node). You can also call postorder-next to get the
-   first item in the walk if you don't want to use two functions."
+   thing before processing a node)."
   [loc]
   (if (= :end (loc 1)) ;; If it's the end, return the end.
     loc
     (if (nil? (zip/up loc))
-      ;; Non-end has no parent, so go as far down as possible from this node.
-      (leftmost-descendant loc)
+      ;; Node has no parent, this is the root/final node, return the end.
+      [(zip/node loc) :end]
       ;; Node is internal, so we got to it by having traversed its children.
       ;; Instead, we want to try to move to the leftmost descendant of our
       ;; right sibling, if possible.
       (or (and (zip/right loc) (leftmost-descendant (zip/right loc)))
           ;; There was no right sibling, we must move back up the tree.
-          ;; If the parent node has no parent, we have reached the end.
-          (if (and (zip/up loc) (zip/up (zip/up loc)))
-            (zip/up loc)
-            [(zip/node (zip/up loc)) :end])))))
+          (zip/up loc)))))

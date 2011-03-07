@@ -209,14 +209,15 @@
    it where the selector dictates to the form given."
   [[select? transform] form]
   ;; Iterate through all the nodes in depth-first order, replacing any applicable.
-  (loop [loc (tzip/hiccup-zip form)]
+  (loop [loc (tzip/postorder-first (tzip/hiccup-zip form))]
     ;; If this node is selected by the selector, transform it.
     (if (zip/end? loc)
       (zip/root loc)
-      (recur (zip/next (if (and (vector? (zip/node loc))
-                                (select? loc))
-                         (zip/rightmost (zip/down (zip/edit loc transform)))
-                         loc))))))
+      (recur (tzip/postorder-next
+              (if (and (vector? (zip/node loc))
+                       (select? loc))
+                (zip/edit loc transform)
+                loc))))))
 
 (defn apply-transforms
   "transform-list is a list of pairs of functions. The first in each pair is a
