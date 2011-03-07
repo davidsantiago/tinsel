@@ -88,9 +88,10 @@
   [n]
   (fn [zip-loc]
     ;; The left has no padding elements, so we just subtract 1 as expected.
-    (let [movements (repeat (- n 1) zip/left) ;; Apply move-left-n to move
-          move-left-n (apply comp movements)  ;; left n times.
-          nth-last-child (move-left-n (zip/rightmost zip-loc))]
+    ;; Again, identity is so there is something to apply to when n=1.
+    (let [movements (repeat (- n 1) zip/left)
+          move-to-nth-last (apply comp identity movements)
+          nth-last-child (move-to-nth-last (zip/rightmost zip-loc))]
       (if (and (= zip-loc nth-last-child)
                (zip/up zip-loc)) ;; Check for parent.
         zip-loc))))

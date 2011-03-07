@@ -134,9 +134,17 @@
   (nth-last-child? 2)
   (set-content third-list-item))
 
+(deftemplate select-last-child-template
+  [[:body [:ul [:li] [:li]]]] ;; Want to ensure root isn't selected.
+  [added-attrs]
+  (nth-last-child? 1)
+  (set-attrs added-attrs))
+
 (deftest test-select-nth-last-child-template
   (is (= "<body><ul><li></li><li></li><li id=\"here\">HERE</li><li></li></ul></body>"
-         (select-nth-last-child-template "HERE"))))
+         (select-nth-last-child-template "HERE")))
+  (is (= "<body><ul last-child=\"true\"><li></li><li last-child=\"true\"></li></ul></body>"
+         (select-last-child-template {:last-child "true"}))))
 
 ;;
 ;; Test Selector Combinators
