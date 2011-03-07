@@ -1,4 +1,4 @@
-(defproject tinsel "0.3.0-SNAPSHOT"
+(defproject tinsel "0.3.0"
   :description "Selector-based templates with Hiccup."
   :dependencies [[clojure "1.2.0"]
                  [hiccup "0.3.4"]
