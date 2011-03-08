@@ -299,7 +299,7 @@ Obtaining it
 
 You can add
 
-	[tinsel "0.3.0"]
+	[tinsel "0.3.1"]
 
 to cake's project.clj and run `cake deps`. Similar steps should work on
 Leiningen too.
