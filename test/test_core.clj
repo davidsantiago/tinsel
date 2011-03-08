@@ -324,6 +324,10 @@
   (is (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
          (set-attribute-template4 {:src "http://example.com/img.jpg"}))))
 
+;;
+;; Miscellaneous
+;;
+
 ;; A slightly larger template, check output quality against hiccup.
 (deftemplate medium-template
   [[:html
@@ -361,4 +365,13 @@
 
 (deftest test-hiccup-page-helpers
   (is (= "<html><head><script src=\"some-js.js\" type=\"text/javascript\"></script><link href=\"some-css.css\" rel=\"stylesheet\" type=\"text/css\" /></head></html>"
-       (hiccup-page-helpers "some-css.css"))))
+         (hiccup-page-helpers "some-css.css"))))
+
+;; Make sure we can use a string as a hiccup form, so we can set doctype.
+(deftemplate string-as-form-template
+  ["<!DOCTYPE html>" [:html ["body"]] "<!--asdf-->"]
+  [])
+
+(deftest test-string-as-form
+  (is (= "<!DOCTYPE html><html><body></body></html><!--asdf-->"
+         (string-as-form-template))))
