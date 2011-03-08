@@ -48,13 +48,15 @@
   "Given a hiccup form (vector), recursively normalizes it using
    normalize-element."
   [form]
-  ;; Do a pre-order walk and save the first two items, then do the children,
-  ;; then glue them back together.
-  (let [[tag attrs & contents] (normalize-element form)]
-    (apply vector tag attrs (map #(if (vector? %) ;; Recurse only  on vec children.
-                                    (normalize-form %)
-                                    %)
-                                 contents))))
+  (if (string? form) ; Should we allow more here? Keywords?
+    form
+    ;; Do a pre-order walk and save the first two items, then do the children,
+    ;; then glue them back together.
+    (let [[tag attrs & contents] (normalize-element form)]
+      (apply vector tag attrs (map #(if (vector? %) ;; Recurse only  on vec children.
+                                      (normalize-form %)
+                                      %)
+                                   contents)))))
 
 ;;
 ;; Selector/Transformer building blocks

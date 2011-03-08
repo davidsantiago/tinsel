@@ -4,7 +4,8 @@
   ;; These two are just for testing, see test-ns-membership.
   (:require [clojure.string :as str]
             [clojure.zip :as zip]
-            [hiccup.core :as hiccup])
+            [hiccup.core :as hiccup]
+            [hiccup.page-helpers :as hiccup-ph])
   (:use clojure.walk))
 
 ;; The most basic test: one with no transformations.
@@ -323,6 +324,10 @@
   (is (= "<body><img src=\"http://example.com/img.jpg\" /></body>"
          (set-attribute-template4 {:src "http://example.com/img.jpg"}))))
 
+;;
+;; Miscellaneous
+;;
+
 ;; A slightly larger template, check output quality against hiccup.
 (deftemplate medium-template
   [[:html
@@ -350,3 +355,23 @@
               [:ul.times-table
                (for [n (range 1 13)]
                  [:li n " * 9 = " (* n 9)])]]])))))
+
+;; Test for hiccup page-helpers to work.
+(deftemplate hiccup-page-helpers
+  [[:html [:head (hiccup-ph/include-js "some-js.js")]]]
+  [css-filename]
+  (tag= :head)
+  (append-content (hiccup-ph/include-css css-filename)))
+
+(deftest test-hiccup-page-helpers
+  (is (= "<html><head><script src=\"some-js.js\" type=\"text/javascript\"></script><link href=\"some-css.css\" rel=\"stylesheet\" type=\"text/css\" /></head></html>"
+         (hiccup-page-helpers "some-css.css"))))
+
+;; Make sure we can use a string as a hiccup form, so we can set doctype.
+(deftemplate string-as-form-template
+  ["<!DOCTYPE html>" [:html ["body"]] "<!--asdf-->"]
+  [])
+
+(deftest test-string-as-form
+  (is (= "<!DOCTYPE html><html><body></body></html><!--asdf-->"
+         (string-as-form-template))))
