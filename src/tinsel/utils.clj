@@ -45,7 +45,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn normalize-form
-  "Given a hiccup form (vector), recursively normalizes it using
+  "Given a hiccup form, recursively normalizes it using
    normalize-element."
   [form]
   (if (string? form) ; Should we allow more here? Keywords?
