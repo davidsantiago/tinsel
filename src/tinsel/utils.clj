@@ -20,7 +20,7 @@
   [form]
   (or (symbol? form)
       (and (seq? form) ;; Macros return seqs, not lists.
-           (not= 'quote (first form)))))
+           (not= `quote (first form)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adapted from hiccup/core.clj for compatibility.
