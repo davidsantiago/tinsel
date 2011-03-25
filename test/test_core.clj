@@ -325,6 +325,26 @@
          (set-attribute-template4 {:src "http://example.com/img.jpg"}))))
 
 ;;
+;; Transformer Combinators
+;;
+
+(deftemplate accumulate-template1
+  [[:body [:div]]]
+  [arg-map]
+  (tag= :div)
+  (accumulate
+   (set-content [:p (:middle arg-map)])
+   (prepend-content [:p (:first arg-map)])
+   (append-content [:p (:last arg-map)])
+   (set-attrs {:id "paras"})))
+
+(deftest test-accumulate-template
+  (is (= "<body><div id=\"paras\"><p>I'm first!</p><p>I'm the middle!</p><p>I'm last!</p></div></body>"
+         (accumulate-template1 {:first "I'm first!"
+                                :middle "I'm the middle!"
+                                :last "I'm last!"}))))
+
+;;
 ;; Miscellaneous
 ;;
 
