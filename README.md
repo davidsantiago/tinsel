@@ -261,6 +261,20 @@ current content.
 * `set-attrs` - Adds the map argument to the node's attributes, overwriting
 any that are already present.
 
+####Transformer Combinators####
+
+Just as there are selector combinators to create more complicated selectors
+from simpler ones, it is also possible to create transformer combinators,
+functions that take one or more other transformers and return a new
+transformer based on the arguments.
+
+Currently available transformer combinators are
+
+* `accumulate` - Takes any number of transformers as argument and returns a
+transformer that performs all of the transformations in order on its argument
+node, using the output of the first transformation as the input to the second,
+etc.
+
 Performance
 -----------
 In my testing, Tinsel renders templates exactly as fast as the equivalent
@@ -299,7 +313,7 @@ Obtaining it
 
 You can add
 
-	[tinsel "0.3.1"]
+	[tinsel "0.3.2"]
 
 to cake's project.clj and run `cake deps`. Similar steps should work on
 Leiningen too.

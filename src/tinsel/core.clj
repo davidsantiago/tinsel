@@ -198,6 +198,19 @@
                     ~'~attr-map)
             (utils/contents node#))))
 
+;;
+;; Transformer Combinators
+;;
+;; These transformers take other transformers as arguments, returning a
+;; compound transformer.
+
+(defn accumulate
+  "Takes a sequence of transformers as argument and returns a transformer that
+   applies them all in order to a node, using the output of the previous as
+   the input to the next."
+  [& transformers]
+  (apply comp (reverse transformers)))
+
 
 ;;
 ;; Compiler
