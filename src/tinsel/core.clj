@@ -3,7 +3,7 @@
   (:use [hiccup core])
   (:require [tinsel.utils :as utils]
             [tinsel.zip :as tzip]
-            [pl.danieljanus.tagsoup :as ts]
+            [hickory.core :as hickory]
             [clojure.string :as str]
             [clojure.zip :as zip]
             [clojure.walk :as walk]))
@@ -263,16 +263,22 @@
 ;; Template Loading
 ;;
 
-(defn html-file
+#_(defn html-file
   "Parse HTML out of the argument (which can be anything accepted by
    clojure.contrib's reader function)."
   [file-path]
-  (vector (ts/parse file-path)))
+  (vector (hickory/parse file-path)))
 
 (defn html-string
   "Parse HTML out of the string given."
   [html-string]
-  (vector (ts/parse-string html-string)))
+  (hickory/parse html-string))
+
+(defn html-file
+  "Parse HTML out of the argument (which can be anything accepted by
+   clojure.java.io's reader function)."
+  [file-path]
+  (html-string (slurp file-path)))
 
 (defn hiccup-file
   "Parse hiccup forms out of the argument."

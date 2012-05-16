@@ -1,7 +1,7 @@
 (defproject tinsel "0.3.2"
   :description "Selector-based templates with Hiccup."
-  :dependencies [[clojure "1.2.0"]
-                 [hiccup "0.3.4"]
-                 [clj-tagsoup "0.2.5"]]
+  :dependencies [[org.clojure/clojure "1.3.0"]
+                 [hiccup "1.0.0"]
+                 [hickory "0.1.0-SNAPSHOT"]]
   :dev-dependencies [[swank-clojure "1.2.1"]
                      [org.clojars.gjahad/debug-repl "0.3.1"]])

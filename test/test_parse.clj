@@ -4,7 +4,7 @@
   (:require [clojure.zip :as zip]))
 
 (deftest test-parse-html-string
-  (is (= [[:html {}]]
+  (is (= [[:html {} [:head {}] [:body {}]]]
            (html-string "<html></html>"))))
 
 (deftemplate html-template (html-string "<html></html>")

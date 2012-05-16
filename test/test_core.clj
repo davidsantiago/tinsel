@@ -5,7 +5,7 @@
   (:require [clojure.string :as str]
             [clojure.zip :as zip]
             [hiccup.core :as hiccup]
-            [hiccup.page-helpers :as hiccup-ph])
+            [hiccup.page :as hpage])
   (:use clojure.walk))
 
 ;; The most basic test: one with no transformations.
@@ -378,10 +378,10 @@
 
 ;; Test for hiccup page-helpers to work.
 (deftemplate hiccup-page-helpers
-  [[:html [:head (hiccup-ph/include-js "some-js.js")]]]
+  [[:html [:head (hpage/include-js "some-js.js")]]]
   [css-filename]
   (tag= :head)
-  (append-content (hiccup-ph/include-css css-filename)))
+  (append-content (hpage/include-css css-filename)))
 
 (deftest test-hiccup-page-helpers
   (is (= "<html><head><script src=\"some-js.js\" type=\"text/javascript\"></script><link href=\"some-css.css\" rel=\"stylesheet\" type=\"text/css\" /></head></html>"
