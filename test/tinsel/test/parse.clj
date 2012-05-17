@@ -1,4 +1,4 @@
-(ns test-parse
+(ns tinsel.test.parse
   (:use tinsel.core
         clojure.test)
   (:require [clojure.zip :as zip]))

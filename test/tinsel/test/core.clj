@@ -1,4 +1,4 @@
-(ns test-core
+(ns tinsel.test.core
   (:use tinsel.core
         clojure.test)
   ;; These two are just for testing, see test-ns-membership.

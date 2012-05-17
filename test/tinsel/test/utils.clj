@@ -1,4 +1,4 @@
-(ns test-utils
+(ns tinsel.test.utils
   (:use clojure.test)
   (:require [tinsel.utils :as utils]))
 
