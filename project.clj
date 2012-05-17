@@ -2,6 +2,4 @@
   :description "Selector-based templates with Hiccup."
   :dependencies [[org.clojure/clojure "1.3.0"]
                  [hiccup "1.0.0"]
-                 [hickory "0.1.0-SNAPSHOT"]]
-  :dev-dependencies [[swank-clojure "1.2.1"]
-                     [org.clojars.gjahad/debug-repl "0.3.1"]])
+                 [hickory "0.1.0-SNAPSHOT"]])
