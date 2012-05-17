@@ -1,13 +1,17 @@
-(ns test-parse
+(ns tinsel.test.parse
   (:use tinsel.core
         clojure.test)
   (:require [clojure.zip :as zip]))
 
-(deftest test-parse-html-string
-  (is (= [[:html {}]]
-           (html-string "<html></html>"))))
+(deftest test-parse-html-document
+  (is (= [[:html {} [:head {}] [:body {}]]]
+           (html-document "<html></html>"))))
 
-(deftemplate html-template (html-string "<html></html>")
+(deftest test-parse-html-fragment
+  (is (= [[:a {:href "foo"} "foo"]]
+         (html-fragment "<a href=\"foo\">foo</a>"))))
+
+(deftemplate html-template (html-document "<html></html>")
   [arg-map]
   (tag= :html)
   (set-content [:head [:title (:msg arg-map)]]))

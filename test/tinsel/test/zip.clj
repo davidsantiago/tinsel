@@ -1,4 +1,4 @@
-(ns test-zip
+(ns tinsel.test.zip
   (:use tinsel.zip
         clojure.test)
   (:require [clojure.zip :as zip]

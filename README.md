@@ -12,7 +12,7 @@ by Enlive and Pure, in that there is no special language for specifying where
 to receive content in the templates; the template defines where to put things
 based on the properties of the nodes in the HTML tree. I prefer to write HTML
 in Hiccup, but Tinsel can also read in HTML and parse it into Hiccup forms
-transparently to you using clj-tagsoup.
+transparently to you using [hickory](http://github.com/davidsantiago/hickory).
 
 The main idea is to take an HTML template, with absolutely no special
 template-oriented markup or scripts in it, and then specify where in the tree
@@ -110,6 +110,20 @@ this case, it will select a `title` node that has some ancestor that is a
 
 The next two selectors use `has-class?` to select nodes by class and set their
 content. The final rendered page reflects all the changes.
+
+To load templates straight out of HTML, you can use the functions
+`html-document` (for full HTML documents) and `html-fragment` (for
+fragments you would find somewhere in the body tag that don't amount
+to a full document). Both accept strings with the HTML in them, or a
+Reader that will deliver the HTML. You can then just pass the return
+value of either as the template argument to `deftemplate`:
+
+```clojure
+(deftemplate html-template (html-document "<html></html>")
+  [arg-map]
+  (tag= :html)
+  (set-content [:head [:title (:msg arg-map)]]))
+```
 
 Selectors and Transformers
 --------------------------
@@ -313,17 +327,18 @@ Obtaining it
 
 You can add
 
-	[tinsel "0.3.2"]
+	[tinsel "0.4.0"]
 
-to cake's project.clj and run `cake deps`. Similar steps should work on
-Leiningen too.
+to your project.clj, or whatever is equivalent in the build tool you use.
 
 Bugs and Missing Features
 -------------------------
 
-I'm still working on things, particularly more selectors and transformers.
-
-Nonetheless, please let me know of any problems you're having.
+I use this myself, and have run out of things I feel it is
+missing. But there's always room to add more selectors and
+transformers, as we come across the need. My particular usage patterns
+have not made me aware of any known bugs, but they are of course in
+there, and I'd like to fix them if you find them, so please let me know.
 
 License
 -------
