@@ -263,22 +263,23 @@
 ;; Template Loading
 ;;
 
-#_(defn html-file
-  "Parse HTML out of the argument (which can be anything accepted by
-   clojure.contrib's reader function)."
-  [file-path]
-  (vector (hickory/parse file-path)))
+(defn html-document
+  "Parse an HTML document out of the argument given, which can be either a
+   string containing the HTML document, or a reader for that document."
+  [string-or-reader]
+  (let [html-string (if (string? string-or-reader)
+                      string-or-reader
+                      (slurp string-or-reader))]
+    (hickory/parse html-string)))
 
-(defn html-string
-  "Parse HTML out of the string given."
-  [html-string]
-  (hickory/parse html-string))
-
-(defn html-file
-  "Parse HTML out of the argument (which can be anything accepted by
-   clojure.java.io's reader function)."
-  [file-path]
-  (html-string (slurp file-path)))
+(defn html-fragment
+  "Parse an HTML fragment out of the argument given, which can be either a
+   string containing the HTML fragment, or a reader for that fragment."
+  [string-or-reader]
+  (let [html-string (if (string? string-or-reader)
+                      string-or-reader
+                      (slurp string-or-reader))]
+    (hickory/parse-fragment html-string)))
 
 (defn hiccup-file
   "Parse hiccup forms out of the argument."
